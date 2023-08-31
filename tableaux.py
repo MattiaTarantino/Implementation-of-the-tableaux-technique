@@ -50,9 +50,9 @@ class Formula:
         else:
             return False
     
-    def tableaux(self):
-        if self.root1 is None:                      #se si fa in generale va modificato con "if self.root is None"
-            return False
+    #def tableaux(self):
+    #    if self.root1 is None:                      #se si fa in generale va modificato con "if self.root is None"
+    #       return False
         #controllo del nodo se è un operatore o termine
         #controllo se l'operatore è ¬, nel caso controllo il numero di figli, se è uno vedo se è un termine o un ¬
         #caso 1: controllo il boolean del nodo per vedere se c'è cambio: se c'è retruna false per questa analisi, se non c'è assegna false;
@@ -84,3 +84,88 @@ class Formula:
 #da analizzare: per ora il passo base usa self.root ma per farlo ricorsivo bisogna guardare il nodo root del sottoalbero che stiamo analizzando
 #vanno implementate funzioni di aggiunta/eliminazione di nodi in testa per far si di poter modificare i singoli sottoalberi quando si applicano le rule
 #come fare la return ogni volta per capire il risultato finale?
+
+
+
+#IDEA ALTERNATIVA
+#tableaux non è un metodo di formula ma una classe a se stante che prende come parametro una formula
+#vantaggio principale analisi della formula ricorsiva e possibilità di creare un nuovo albero che rappresenta il tableaux stesso
+#svantaggio utilizzo della memoria (sti cazzi per ora) e vedere come vengono assegnati i vari valori
+#IDEA MIGLIORE A MIO AVVISO E QUELLA SU CUI LAVORERò per ora
+#va generalizzata l'idea di albero
+#le idee dell'analisi delle varie formule sono le stesse di sopra
+#PER FAR FUNZIONARE QUESTO VA RIVISTA TUTTA LA PARTE PRIMA
+#idea principale del codice: creare un albero di analisi della formula; si cerca in ordine l'appilcazione di doppia negazione/assegnazione, poi si verifica l'applicabilità di alpha rule, poi di beta rule; ogni volta verifico sul set principale e poi verifico sui vari figli
+
+#ins_formula è un nodo che contiene un set di formule
+#si lo mo è una lista e non un insieme ma pace
+class Tableaux():
+    def __init__(self, ins_formula):
+        self.ins_formula = ins_formula
+    
+    #def risolvi(self):
+        #if ins_formula is None:
+            #return false
+        #salva i nodi con i termini di ins_formula
+        #inizio controllo dei nodi
+        #1 CONTROLLO: DOPPIA NEGAZIONE/ASSEGNAZOINE BOOLEAN
+        #controllo se c'è "¬"
+            #se si controllo i figli
+                #se è uno ed è "¬"
+                    #applico semplificazione di doppia negazione
+                    #creo un nodo con solamente il figlio senza negazioni a ins_formula
+                #se è un termine
+                    #controllo il suo boolean
+                        #se è true chiudo la branch(come fare?)
+                        #return false
+                        #else boolean = false
+                            #controlla i boolean dei termini id ins_formula
+                            #se sono tutti diversi da None return true
+        #se ho un termine
+            #controllo il suo boolean
+                #se è false chiudo la branch(come fare?)
+                #return false
+                #else boolean = true
+                    #controlla i boolean dei termini id ins_formula
+                    #se sono tutti diversi da None return true
+                #altrimenti vado avanti
+        #vado avanti nel set finchè non finisco
+        #2 CONTROLLO: ALPHA RULE
+        #controllo se c'è "¬"
+            #se si controllo i figli
+                #verifica se applicabile alpha rule
+                #se è un "||"
+                    #aggiungi un nodo a ins_formula che contiene un set vuoto
+                    #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo sinistro di formula
+                    #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
+                #se è un "->"
+                    #aggiungi un nodo a formula che contiene un set vuoto
+                    #aggiungi un nodo al set con nodo sinistro di formula
+                    #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
+        #controllo se c'è "&&"
+            #aggiungi un nodo a ins_formula con un set vuoto
+            #aggiungi un nodo con il figlio sinistro al set
+            #aggiungi un nodo con il figlio destro al set
+        #3 CONTROLLO: BETA RULE
+        #controllo se c'è "¬"
+            #se si controllo i figli
+                #verifica se applicabile una beta rule
+                #se è un "&&"
+                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
+                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo destro di formula
+        #controllo se c'è "||"
+            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo sinistro di formula
+            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
+        #controllo se c'è "->"
+            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
+            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
+        #applica di nuovo sui figli di ins_formula
+
+        #ultimo step quale è la return da fare? penso a qualcosa come self.res = false e se ho una return di una branch = true allora smetto di eseguire il codice e returno true, altrimenti analizzo tutte le branch e returno alla fine false
+
+
+
+
+
+#tocca trovare un modo per applicare la creazione di nodi solamente alle foglie dell'albero Tableaux
+#tocca trovare un modo per applicare le rule in ordine nel caso mi ritrovi un set di formule; un'idea è la creazione di una queue delle formule da analizzare a cui applicare le rule(con che ordine inserire?)
