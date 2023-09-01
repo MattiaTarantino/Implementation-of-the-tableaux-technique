@@ -44,7 +44,7 @@ class Formula:
 
     #definire lista di operatori
     def estOperator(self, nodo):
-        operators = ["&&", "||", "¬", "¬¬", "->"] #and, or, not, not not, implica
+        operators = ["&&", "||", "¬", "->"] #and, or, not, not not, implica
         if nodo.value in operators:
             return True
         else:
@@ -102,70 +102,70 @@ class Formula:
 class Tableaux():
     def __init__(self, ins_formula):
         self.ins_formula = ins_formula
+        self.ret = False
     
     #def risolvi(self):
-        #if ins_formula is None:
-            #return false
-        #salva i nodi con i termini di ins_formula
-        #inizio controllo dei nodi
-        #1 CONTROLLO: DOPPIA NEGAZIONE/ASSEGNAZOINE BOOLEAN
-        #controllo se c'è "¬"
-            #se si controllo i figli
-                #se è uno ed è "¬"
-                    #applico semplificazione di doppia negazione
-                    #creo un nodo con solamente il figlio senza negazioni a ins_formula
-                #se è un termine
-                    #controllo il suo boolean
-                        #se è true chiudo la branch(come fare?)
-                        #return false
-                        #else boolean = false
-                            #controlla i boolean dei termini id ins_formula
-                            #se sono tutti diversi da None return true
-        #se ho un termine
-            #controllo il suo boolean
-                #se è false chiudo la branch(come fare?)
+        #if self.ret == False:
+            #if ins_formula is None:
                 #return false
-                #else boolean = true
-                    #controlla i boolean dei termini id ins_formula
-                    #se sono tutti diversi da None return true
-                #altrimenti vado avanti
-        #vado avanti nel set finchè non finisco
-        #2 CONTROLLO: ALPHA RULE
-        #controllo se c'è "¬"
-            #se si controllo i figli
-                #verifica se applicabile alpha rule
-                #se è un "||"
-                    #aggiungi un nodo a ins_formula che contiene un set vuoto
-                    #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo sinistro di formula
-                    #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
-                #se è un "->"
-                    #aggiungi un nodo a formula che contiene un set vuoto
-                    #aggiungi un nodo al set con nodo sinistro di formula
-                    #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
-        #controllo se c'è "&&"
-            #aggiungi un nodo a ins_formula con un set vuoto
-            #aggiungi un nodo con il figlio sinistro al set
-            #aggiungi un nodo con il figlio destro al set
-        #3 CONTROLLO: BETA RULE
-        #controllo se c'è "¬"
-            #se si controllo i figli
-                #verifica se applicabile una beta rule
-                #se è un "&&"
-                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
-                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo destro di formula
-        #controllo se c'è "||"
-            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo sinistro di formula
-            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
-        #controllo se c'è "->"
-            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
-            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
-        #applica di nuovo sui figli di ins_formula
-
-        #ultimo step quale è la return da fare? penso a qualcosa come self.res = false e se ho una return di una branch = true allora smetto di eseguire il codice e returno true, altrimenti analizzo tutte le branch e returno alla fine false
-
-
+            #salva i nodi con i termini di ins_formula
+            #inizio controllo dei nodi
+            #1 CONTROLLO: DOPPIA NEGAZIONE/ASSEGNAZOINE BOOLEAN
+            #controllo se c'è "¬"
+                #se si controllo i figli
+                    #se è uno ed è "¬"
+                        #applico semplificazione di doppia negazione
+                        #creo un nodo con solamente il figlio senza negazioni a ins_formula
+                    #se è un termine
+                        #controllo il suo boolean
+                            #se è true chiudo la branch(come fare?)
+                            #return
+                            #else 
+                                #boolean = false
+                                #controlla i boolean dei termini id ins_formula
+                                #se sono tutti diversi da None return true
+            #se ho un termine
+                #controllo il suo boolean
+                    #se è false chiudo la branch(come fare?)
+                    #return
+                    #else 
+                        #boolean = true
+                        #controlla i boolean dei termini id ins_formula
+                        #se sono tutti diversi da None return true
+                    #altrimenti vado avanti
+            #vado avanti nel set finchè non finisco
+            #2 CONTROLLO: ALPHA RULE
+            #controllo se c'è "¬"
+                #se si controllo i figli
+                    #verifica se applicabile alpha rule
+                    #se è un "||"
+                        #aggiungi un nodo a ins_formula che contiene un set vuoto
+                        #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo sinistro di formula
+                        #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
+                    #se è un "->"
+                        #aggiungi un nodo a ins_formula che contiene un set vuoto
+                        #aggiungi un nodo al set con nodo sinistro di formula
+                        #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
+            #controllo se c'è "&&"
+                #aggiungi un nodo a ins_formula con un set vuoto
+                #aggiungi un nodo con il figlio sinistro al set
+                #aggiungi un nodo con il figlio destro al set
+            #3 CONTROLLO: BETA RULE
+            #controllo se c'è "¬"
+                #se si controllo i figli
+                    #verifica se applicabile una beta rule
+                    #se è un "&&"
+                        #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
+                        #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo destro di formula
+            #controllo se c'è "||"
+                #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo sinistro di formula
+                #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
+            #controllo se c'è "->"
+                #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
+                #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
+            #for i in ins_formula.childs:
+                #risolvi(ins_formula.childs[i])
 
 
 
 #tocca trovare un modo per applicare la creazione di nodi solamente alle foglie dell'albero Tableaux
-#tocca trovare un modo per applicare le rule in ordine nel caso mi ritrovi un set di formule; un'idea è la creazione di una queue delle formule da analizzare a cui applicare le rule(con che ordine inserire?)
