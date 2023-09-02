@@ -3,45 +3,28 @@
 #          può essere termine solo se foglia
 #          figli o figlio sx/dx
 class Formula:
-    class Node:
-        def __init__(self, value):
-            self.childs = []
-            self.value = value
-            self.boolean = None
-
-        def estFoglia(self):
-            return len(self.childs) == 0
+    
+    def __init__(self, root):
+        self.termini = []
+        self.root = root
         
-    def __init__(self):
-        self.root1 = self.Node("¬")
-        implica1 = self.Node("->")
-        self.root1.childs.append(implica1)
-        or1 = self.Node("||")
-        or2 = self.Node("||")
-        implica1.childs.append(or1)
-        implica1.childs.append(or2)
-        q = self.node("q")
-        p = self.node("p")
-        or1.childs.append(q)
-        or1.childs.append(p)
-        or2.childs.append(q)
-        or2.childs.append(p)
 
-        self.root2 = self.Node("¬")
-        implica1 = self.Node("->")
-        self.root2.childs.append(implica1)
-        or1 = self.Node("||")
-        and1 = self.Node("&&")
-        implica1.childs.append(or1)
-        implica1.childs.append(and1)
-        q = self.node("q")
-        p = self.node("p")
+        #self.root2 = self.Node("¬")
+        #implica1 = self.Node("->")
+        #self.root2.childs.append(implica1)
+        #or1 = self.Node("||")
+        #and1 = self.Node("&&")
+        #implica1.childs.append(or1)
+        #implica1.childs.append(and1)
+        """ 
+        q = self.Node("q")
+        p = self.Node("p")
         or1.childs.append(q)
         or1.childs.append(p)
         and1.childs.append(q)
         and1.childs.append(p)
 
-
+ """
     #definire lista di operatori
     def estOperator(self, nodo):
         operators = ["&&", "||", "¬", "->"] #and, or, not, not not, implica
@@ -49,43 +32,13 @@ class Formula:
             return True
         else:
             return False
+
+    def estTermine(self, nodo):
+        if len(nodo.childs) == 0:
+            return True
+        else:
+            return False
     
-    #def tableaux(self):
-    #    if self.root1 is None:                      #se si fa in generale va modificato con "if self.root is None"
-    #       return False
-        #controllo del nodo se è un operatore o termine
-        #controllo se l'operatore è ¬, nel caso controllo il numero di figli, se è uno vedo se è un termine o un ¬
-        #caso 1: controllo il boolean del nodo per vedere se c'è cambio: se c'è retruna false per questa analisi, se non c'è assegna false;
-        #caso 2: elimino i due nodi ¬
-        #se ho un termine controllo il suo boolean: se è false return false, altrimneti assegna true
-        #controllo l'applicazione di alpha rule attraverso l'operatore che ho; nel caso di ¬ e un figlio operatore non cambia, se ho precedentemente applicato una alpha rule vedo su quale parte posso applicarla prima
-        #se posso applicarla lo faccio e divido l'analisi in due formule; come farlo? richiamo tableaux sulla formula nuova? lista di parti?
-        #se non posso applicare alpha rule applico beta rule e applico il tableaux su entrambi i rami che si creano
-        #cosa restituire? in teoria se ho una soluzione senza contraddizini: return true, altrimenti false
-
-#tableau:
-#scelta se ricorsivo o iterativo
-#passo base: controllo se l'albero esiste altrimenti return false
-#passo base 2: controllo se l'albero ha solo un nodo, ovvero un solo elemento: return true
-#analizza se si può effettuare ¬¬elimination
-#analizza primo nodo e suoi sottoalberi e verifica se è possibile attivare una alpha rule(controlla il value del padre e se c'è un not prima)
-#se non si possono applicare alpha rule applicare beta rule
-# a ogni rule applicata verificare se si ottiene un figlio con value = termine, se si dare valore boolean al termine
-#verifica di non contraddizione sui boolean, se c'è chiudi il ramo
-#return di base è false, ma se c'è un ramo che arriva alla foglia senza contraddizioni return true
-#problemi: come si modifica l'albero con l'applicazione delle rule?; probabilmente ricorsivo >>> iterativo (tocca rivedere i passi base); come fare se ho un set di formule iniziali?
-
-#tableaux deve essere un metodo a cui viene passata una formula (ovvero self); la formula la inseriamo inizialmente in modo statico e poi vediamo se farlo dinamico; statico quindi l'albero che rappresenta la formula deve già esistere.
-#per farla già esistere creiamo tutto l'albero in __init__ di Formula e lo analizziamo da là (l'analisi si fa comunque generica perchè l'inizializzazione statica si può sempre cambiare)
-#inizialmente ne creiamo un paio(quelle del prof)
-#la versione dinamica richiederà un convertitore stringa -> albero delle formule (non ho idea di come si faccia)
-# !!!!!!!!!!!!i nodi con i termini si possono usare dall'inizio e il controllo sulla non contraddizione si verifica con il metodo check_boolean!!!!!!!!!!!!!!!!!!!!!!!(potrebbe non funzionare perchè stesso nodo in memoria quindi va analizzato)
-#verificare che gli alberi statici siano giusti
-#da analizzare: per ora il passo base usa self.root ma per farlo ricorsivo bisogna guardare il nodo root del sottoalbero che stiamo analizzando
-#vanno implementate funzioni di aggiunta/eliminazione di nodi in testa per far si di poter modificare i singoli sottoalberi quando si applicano le rule
-#come fare la return ogni volta per capire il risultato finale?
-
-
 
 #IDEA ALTERNATIVA
 #tableaux non è un metodo di formula ma una classe a se stante che prende come parametro una formula
@@ -100,72 +53,228 @@ class Formula:
 #ins_formula è un nodo che contiene un set di formule
 #si lo mo è una lista e non un insieme ma pace
 class Tableaux():
+
+    class Nodo():
+        def __init__(self, ins_formula):
+            self.ins_formula = ins_formula
+            self.childs = []
+
     def __init__(self, ins_formula):
-        self.ins_formula = ins_formula
         self.ret = False
-    
-    #def risolvi(self):
-        #if self.ret == False:
-            #if ins_formula is None:
-                #return false
+        self.terms = []
+        self.terms_len = len(self.terms)
+        self.root = self.Nodo(ins_formula)
+        self.last_nodes = [self.root]
+
+    def risolvi(self, nodo):
+        if self.ret == False:
+            if nodo.ins_formula is None:
+                return
             #salva i nodi con i termini di ins_formula
+            for formula in nodo.ins_formula:
+                for termine in formula.termini:
+                    if termine not in self.terms:
+                        self.terms.append(termine)
             #inizio controllo dei nodi
             #1 CONTROLLO: DOPPIA NEGAZIONE/ASSEGNAZOINE BOOLEAN
-            #controllo se c'è "¬"
-                #se si controllo i figli
+            for formula in nodo.ins_formula:
+                #controllo se c'è "¬"
+                if formula.root.value == "¬":
+                    #se si controllo i figli
                     #se è uno ed è "¬"
+                    if formula.root.childs[0].value == "¬":
                         #applico semplificazione di doppia negazione
                         #creo un nodo con solamente il figlio senza negazioni a ins_formula
+                        new_formula = Formula(formula.root.childs[0].childs[0])
+                        new_nodo = self.Nodo([new_formula])
+                        for node in self.last_nodes:
+                            node.childs.append(new_nodo)
+                        self.last_nodes = [new_nodo]
                     #se è un termine
+                    if formula.root.childs[0].estTermine():
+                        termine = formula.root.childs[0]
                         #controllo il suo boolean
-                            #se è true chiudo la branch(come fare?)
-                            #return
-                            #else 
-                                #boolean = false
-                                #controlla i boolean dei termini id ins_formula
+                        #se è true chiudo la branch
+                        if termine.boolean == True:
+                            return
+                        else:
+                            #boolean = false
+                            termine.boolean = False
+                            count = 0
+                            #controlla i boolean dei termini id ins_formula
+                            for term in self.terms:
                                 #se sono tutti diversi da None return true
-            #se ho un termine
-                #controllo il suo boolean
-                    #se è false chiudo la branch(come fare?)
-                    #return
-                    #else 
-                        #boolean = true
-                        #controlla i boolean dei termini id ins_formula
-                        #se sono tutti diversi da None return true
-                    #altrimenti vado avanti
-            #vado avanti nel set finchè non finisco
+                                if term.boolean is not None:
+                                    count += 1
+                            if count == self.terms_len:
+                                self.ret = True
+                                return
+                if formula.root.childs[0].estTermine():
+                        termine = formula.root.childs[0]
+                        #controllo il suo boolean
+                        #se è true chiudo la branch
+                        if termine.boolean == False:
+                            return
+                        else:
+                            #boolean = true
+                            termine.boolean = True
+                            count = 0
+                            #controlla i boolean dei termini id ins_formula
+                            for term in self.terms:
+                                #se sono tutti diversi da None return true
+                                if term.boolean is not None:
+                                    count += 1
+                            if count == self.terms_len:
+                                self.ret = True
+                                return
             #2 CONTROLLO: ALPHA RULE
-            #controllo se c'è "¬"
-                #se si controllo i figli
+            for formula in nodo.ins_formula:
+                #controllo se c'è "¬"
+                if formula.root.value == "¬":
+                    #se si controllo i figli
                     #verifica se applicabile alpha rule
                     #se è un "||"
-                        #aggiungi un nodo a ins_formula che contiene un set vuoto
+                    if formula.root.childs[0].value == "||":
+                        new_ins_formula = []
                         #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo sinistro di formula
+                        phi = Node("¬")
+                        phi.childs.append(Node(formula.root.childs[0].childs[0].value))
+                        new_ins_formula.append(Formula(phi))
                         #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
-                    #se è un "->"
+                        psi = Node("¬")
+                        psi.childs.append(Node(formula.root.childs[0].childs[1].value))
+                        new_ins_formula.append(Formula(psi))
                         #aggiungi un nodo a ins_formula che contiene un set vuoto
+                        new_nodo = self.Nodo(new_ins_formula)
+                        for node in self.last_nodes:
+                            node.childs.append(new_nodo)
+                        self.last_nodes = [new_nodo]
+                    #se è un "->"
+                    if formula.root.childs[0].value == "->":
+                        new_ins_formula = []
                         #aggiungi un nodo al set con nodo sinistro di formula
+                        phi = Node(formula.root.childs[0].childs[0].value)
+                        new_ins_formula.append(Formula(phi))
                         #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
-            #controllo se c'è "&&"
-                #aggiungi un nodo a ins_formula con un set vuoto
-                #aggiungi un nodo con il figlio sinistro al set
-                #aggiungi un nodo con il figlio destro al set
+                        psi = Node("¬")
+                        psi.childs.append(Node(formula.root.childs[0].childs[1].value))
+                        new_ins_formula.append(Formula(psi))
+                        #aggiungi un nodo a ins_formula che contiene un set vuoto
+                        new_nodo = self.Nodo(new_ins_formula)
+                        for node in self.last_nodes:
+                            node.childs.append(new_nodo)
+                        self.last_nodes = [new_nodo]
+                #controllo se c'è "&&"
+                if formula.root.value == "&&":
+                    new_ins_formula = []
+                    #aggiungi un nodo con il figlio sinistro al set
+                    phi = Node(formula.root.childs[0].childs[0].value)
+                    new_ins_formula.append(Formula(phi))
+                    #aggiungi un nodo con il figlio destro al set
+                    psi = Node(formula.root.childs[0].childs[1].value)
+                    new_ins_formula.append(Formula(psi))
+                    #aggiungi un nodo a ins_formula con un set vuoto
+                    new_nodo = self.Nodo(new_ins_formula)
+                    for node in self.last_nodes:
+                        node.childs.append(new_nodo)
+                    self.last_nodes = [new_nodo]
             #3 CONTROLLO: BETA RULE
-            #controllo se c'è "¬"
-                #se si controllo i figli
+            for formula in nodo.ins_formula:
+                #controllo se c'è "¬"
+                if formula.root.value == "¬":
+                    #se si controllo i figli
                     #verifica se applicabile una beta rule
                     #se è un "&&"
+                    if formula.root.childs[0].value == "&&":
+                        ins_formula_sx = []
+                        ins_formula_dx = []
                         #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
+                        phi = Node("¬")
+                        phi.childs.append(Node(formula.root.childs[0].childs[0].value))
+                        ins_formula_sx.append(Formula(phi))
                         #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo destro di formula
-            #controllo se c'è "||"
-                #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo sinistro di formula
-                #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
-            #controllo se c'è "->"
-                #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
-                #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
-            #for i in ins_formula.childs:
-                #risolvi(ins_formula.childs[i])
+                        psi = Node("¬")
+                        psi.childs.append(Node(formula.root.childs[0].childs[1].value))
+                        ins_formula_dx.append(Formula(psi))
+                        new_nodo_sx = self.Nodo(ins_formula_sx)
+                        new_nodo_dx = self.Nodo(ins_formula_dx)
+                        self.nodes = []
+                        for node in self.last_nodes:
+                            node.childs.append(new_nodo_sx)
+                            node.childs.append(new_nodo_dx)
+                            self.last_nodes.append(new_nodo_sx)
+                            self.last_nodes.append(new_nodo_dx)
+                #controllo se c'è "||"
+                if formula.root.value == "||":
+                    ins_formula_sx = []
+                    ins_formula_dx = []
+                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo sinistro di formula
+                    phi = Node(formula.root.childs[0].childs[0].value)
+                    ins_formula_sx.append(Formula(phi))
+                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
+                    psi = Node(formula.root.childs[0].childs[1].value)
+                    ins_formula_dx.append(Formula(psi))
+                    new_nodo_sx = self.Nodo(ins_formula_sx)
+                    new_nodo_dx = self.Nodo(ins_formula_dx)
+                    self.nodes = []
+                    for node in self.last_nodes:
+                        node.childs.append(new_nodo_sx)
+                        node.childs.append(new_nodo_dx)
+                        self.last_nodes.append(new_nodo_sx)
+                        self.last_nodes.append(new_nodo_dx)
+                #controllo se c'è "->"
+                if formula.root.value == "->":
+                    ins_formula_sx = []
+                    ins_formula_dx = []
+                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
+                    phi = Node("¬")
+                    phi.childs.append(Node(formula.root.childs[0].childs[0].value))
+                    ins_formula_sx.append(Formula(phi))
+                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
+                    psi = Node(formula.root.childs[0].childs[1].value)
+                    ins_formula_dx.append(Formula(psi))
+                    new_nodo_sx = self.Nodo(ins_formula_sx)
+                    new_nodo_dx = self.Nodo(ins_formula_dx)
+                    self.nodes = []
+                    for node in self.last_nodes:
+                        node.childs.append(new_nodo_sx)
+                        node.childs.append(new_nodo_dx)
+                        self.last_nodes.append(new_nodo_sx)
+                        self.last_nodes.append(new_nodo_dx)
+            for figlio in nodo.childs:
+                self.risolvi(figlio)
 
 
 
 #tocca trovare un modo per applicare la creazione di nodi solamente alle foglie dell'albero Tableaux
+class Node:
+    def __init__(self, value):
+        self.childs = []
+        self.value = value
+        self.boolean = None
+
+    def estTermine(self):
+        return len(self.childs) == 0
+
+ins_formula_exp = []
+root = Node("¬")
+esempio = Formula(root)
+ins_formula_exp.append(esempio)
+implica1 = Node("->")
+root.childs.append(implica1)
+or1 = Node("||")
+or2 = Node("||")
+implica1.childs.append(or1)
+implica1.childs.append(or2)
+q = Node("q")
+esempio.termini.append(q)
+p = Node("p")
+esempio.termini.append(p)
+or1.childs.append(q)
+or1.childs.append(p)
+or2.childs.append(q)
+or2.childs.append(p)
+
+tableaux = Tableaux(ins_formula_exp)
+tableaux.risolvi(tableaux.root)
+print(tableaux.ret)
