@@ -34,7 +34,6 @@ class Tableaux():
         self.ret = False
         self.terms = []
         self.root = self.Nodo(ins_formula)
-        self.last_nodes = [self.root]
         #salva i nodi con i termini di ins_formula
         for formula in ins_formula:
             for termine in formula.termini:
@@ -42,7 +41,7 @@ class Tableaux():
                     self.terms.append(termine)
         self.terms_len = len(self.terms)
 
-    def risolvi(self, nodo):
+    def risolvi(self, nodo, foglie):
         print("chiamata")
         if self.ret == False:
             if nodo.ins_formula is None:
@@ -59,17 +58,20 @@ class Tableaux():
                         print("ho trovato una doppia negazione")
                         #applico semplificazione di doppia negazione
                         #creo un nodo con solamente il figlio senza negazioni a ins_formula
-                        new_formula = Formula(formula.root.childs[0].childs[0])
-                        new_nodo = self.Nodo([new_formula])
-                        for node in self.last_nodes:
+                        new_foglie = []
+                        for node in foglie:
+                            new_formula = Formula(formula.root.childs[0].childs[0])
+                            new_nodo = self.Nodo([new_formula])
                             node.childs.append(new_nodo)
-                        self.last_nodes = [new_nodo]
+                            new_foglie.append(new_nodo)
+                        foglie = new_foglie
                     #se è un termine
                     if formula.root.childs[0].estTermine():
                         termine = formula.root.childs[0]
                         #controllo il suo boolean
                         #se è true chiudo la branch
                         if termine.boolean == True:
+                            nodo.childs = []
                             print("ho una contraddizione true/false")
                             return
                         else:
@@ -92,6 +94,7 @@ class Tableaux():
                     #se è true chiudo la branch
                     if termine.boolean == False:
                         print("ho trovato una contradizzione false/true")
+                        nodo.childs = []
                         return
                     else:
                         #boolean = true
@@ -116,56 +119,62 @@ class Tableaux():
                     #se è un "||"
                     if formula.root.childs[0].value == "||":
                         print("ho trovato una alpha rule: not/or")
-                        new_ins_formula = []
-                        #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo sinistro di formula
-                        phi = Node("¬")
-                        phi.childs.append(formula.root.childs[0].childs[0])
-                        new_ins_formula.append(Formula(phi))
-                        print("figlio di phi in aplha rule not/or: ", phi.childs[0].value)
-                        #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
-                        psi = Node("¬")
-                        psi.childs.append(formula.root.childs[0].childs[1])
-                        new_ins_formula.append(Formula(psi))
-                        print("figlio di psi in aplha rule not/or: ", psi.childs[0].value)
-                        #aggiungi un nodo a ins_formula che contiene un set vuoto
-                        new_nodo = self.Nodo(new_ins_formula)
-                        for node in self.last_nodes:
+                        new_foglie = []
+                        for node in foglie:
+                            new_ins_formula = []
+                            #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo sinistro di formula
+                            phi = Node("¬")
+                            phi.childs.append(formula.root.childs[0].childs[0])
+                            new_ins_formula.append(Formula(phi))
+                            print("figlio di phi in aplha rule not/or: ", phi.childs[0].value)
+                            #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
+                            psi = Node("¬")
+                            psi.childs.append(formula.root.childs[0].childs[1])
+                            new_ins_formula.append(Formula(psi))
+                            print("figlio di psi in aplha rule not/or: ", psi.childs[0].value)
+                            #aggiungi un nodo a ins_formula che contiene un set vuoto
+                            new_nodo = self.Nodo(new_ins_formula)
                             node.childs.append(new_nodo)
-                        self.last_nodes = [new_nodo]
+                            new_foglie.append(new_nodo)
+                        foglie = new_foglie
                     #se è un "->"
                     if formula.root.childs[0].value == "->":
                         print("ho trovato una alpha rule: not/implica")
-                        new_ins_formula = []
-                        #aggiungi un nodo al set con nodo sinistro di formula
-                        phi = formula.root.childs[0].childs[0]
-                        new_ins_formula.append(Formula(phi))
-                        print("phi in alpha rule not/implica: ", phi.value)
-                        #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
-                        psi = Node("¬")
-                        psi.childs.append(formula.root.childs[0].childs[1])
-                        new_ins_formula.append(Formula(psi))
-                        print("figlio di psi in aplha rule not/implica: ", psi.childs[0].value)
-                        #aggiungi un nodo a ins_formula che contiene un set vuoto
-                        new_nodo = self.Nodo(new_ins_formula)
-                        for node in self.last_nodes:
+                        new_foglie = []
+                        for node in foglie:
+                            new_ins_formula = []
+                            #aggiungi un nodo al set con nodo sinistro di formula
+                            phi = formula.root.childs[0].childs[0]
+                            new_ins_formula.append(Formula(phi))
+                            print("phi in alpha rule not/implica: ", phi.value)
+                            #aggiungi un nodo al set con "¬", a cui aggiugni un figlio con il nodo destro di formula
+                            psi = Node("¬")
+                            psi.childs.append(formula.root.childs[0].childs[1])
+                            new_ins_formula.append(Formula(psi))
+                            print("figlio di psi in aplha rule not/implica: ", psi.childs[0].value)
+                            #aggiungi un nodo a ins_formula che contiene un set vuoto
+                            new_nodo = self.Nodo(new_ins_formula)
                             node.childs.append(new_nodo)
-                        self.last_nodes = [new_nodo]
+                            new_foglie.append(new_nodo)
+                        foglie = new_foglie
                 #controllo se c'è "&&"
                 if formula.root.value == "&&":
-                    new_ins_formula = []
-                    #aggiungi un nodo con il figlio sinistro al set
-                    phi = formula.root.childs[0]
-                    new_ins_formula.append(Formula(phi))
-                    print("phi in alpha rule and: ", phi.value)
-                    #aggiungi un nodo con il figlio destro al set
-                    psi = formula.root.childs[1]
-                    new_ins_formula.append(Formula(psi))
-                    print("psi in alpha rule and: ", psi.value)
-                    #aggiungi un nodo a ins_formula con un set vuoto
-                    new_nodo = self.Nodo(new_ins_formula)
-                    for node in self.last_nodes:
+                    new_foglie = []
+                    for node in foglie:
+                        new_ins_formula = []
+                        #aggiungi un nodo con il figlio sinistro al set
+                        phi = formula.root.childs[0]
+                        new_ins_formula.append(Formula(phi))
+                        print("phi in alpha rule and: ", phi.value)
+                        #aggiungi un nodo con il figlio destro al set
+                        psi = formula.root.childs[1]
+                        new_ins_formula.append(Formula(psi))
+                        print("psi in alpha rule and: ", psi.value)
+                        #aggiungi un nodo a ins_formula con un set vuoto
+                        new_nodo = self.Nodo(new_ins_formula)
                         node.childs.append(new_nodo)
-                    self.last_nodes = [new_nodo]
+                        new_foglie.append(new_nodo)
+                    foglie = new_foglie
             #3 CONTROLLO: BETA RULE
             for formula in nodo.ins_formula:
                 #controllo se c'è "¬"
@@ -174,75 +183,77 @@ class Tableaux():
                     #verifica se applicabile una beta rule
                     #se è un "&&"
                     if formula.root.childs[0].value == "&&":
+                        new_foglie = []
+                        for node in foglie:
+                            ins_formula_sx = []
+                            ins_formula_dx = []
+                            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
+                            phi = Node("¬")
+                            phi.childs.append(formula.root.childs[0].childs[0])
+                            ins_formula_sx.append(Formula(phi))
+                            print("phi di beta rule not/and: ", phi.childs[0].value)
+                            #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo destro di formula
+                            psi = Node("¬")
+                            psi.childs.append(formula.root.childs[0].childs[1])
+                            print("psi di beta rule not/and: ", psi.childs[0].value)
+                            ins_formula_dx.append(Formula(psi))
+                            new_nodo_sx = self.Nodo(ins_formula_sx)
+                            new_nodo_dx = self.Nodo(ins_formula_dx)
+                            node.childs.append(new_nodo_sx)
+                            node.childs.append(new_nodo_dx)
+                            new_foglie.append(new_nodo_sx)
+                            new_foglie.append(new_nodo_dx)
+                        foglie = new_foglie
+                #controllo se c'è "||"
+                if formula.root.value == "||":
+                    new_foglie = []
+                    for node in foglie:
+                        ins_formula_sx = []
+                        ins_formula_dx = []
+                        #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo sinistro di formula
+                        phi = formula.root.childs[0]
+                        ins_formula_sx.append(Formula(phi))
+                        print("phi in beta rule or: ", phi.value)
+                        #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
+                        psi = formula.root.childs[1]
+                        ins_formula_dx.append(Formula(psi))
+                        print("psi in beta rule or: ", psi.value)
+                        new_nodo_sx = self.Nodo(ins_formula_sx)
+                        new_nodo_dx = self.Nodo(ins_formula_dx)
+                        node.childs.append(new_nodo_sx)
+                        node.childs.append(new_nodo_dx)
+                        new_foglie.append(new_nodo_sx)
+                        new_foglie.append(new_nodo_dx)
+                    foglie = new_foglie
+                #controllo se c'è "->"
+                if formula.root.value == "->":
+                    new_foglie = []
+                    for node in foglie:
                         ins_formula_sx = []
                         ins_formula_dx = []
                         #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
                         phi = Node("¬")
-                        phi.childs.append(formula.root.childs[0].childs[0])
+                        phi.childs.append(formula.root.childs[0])
                         ins_formula_sx.append(Formula(phi))
-                        print("phi di beta rule not/and: ", phi.childs[0].value)
-                        #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo destro di formula
-                        psi = Node("¬")
-                        psi.childs.append(formula.root.childs[0].childs[1])
-                        print("psi di beta rule not/and: ", psi.childs[0].value)
+                        print("phi in beta rule implica: ", phi.childs[0].value)
+                        #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
+                        psi = formula.root.childs[1]
+                        print("psi in beta rule implica: ", psi.value)
                         ins_formula_dx.append(Formula(psi))
                         new_nodo_sx = self.Nodo(ins_formula_sx)
                         new_nodo_dx = self.Nodo(ins_formula_dx)
-                        len_last_nodes = len(self.last_nodes)
-                        for node in self.last_nodes:
-                            node.childs.append(new_nodo_sx)
-                            node.childs.append(new_nodo_dx)
-                        self.last_nodes = []
-                        for i in range(len_last_nodes):
-                            self.last_nodes.append(new_nodo_sx)
-                            self.last_nodes.append(new_nodo_dx)
-                #controllo se c'è "||"
-                if formula.root.value == "||":
-                    ins_formula_sx = []
-                    ins_formula_dx = []
-                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo sinistro di formula
-                    phi = formula.root.childs[0]
-                    ins_formula_sx.append(Formula(phi))
-                    print("phi in beta rule or: ", phi.value)
-                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
-                    psi = formula.root.childs[1]
-                    ins_formula_dx.append(Formula(psi))
-                    print("psi in beta rule or: ", psi.value)
-                    new_nodo_sx = self.Nodo(ins_formula_sx)
-                    new_nodo_dx = self.Nodo(ins_formula_dx)
-                    len_last_nodes = len(self.last_nodes)
-                    for node in self.last_nodes:
                         node.childs.append(new_nodo_sx)
                         node.childs.append(new_nodo_dx)
-                    self.last_nodes = []
-                    for i in range(len_last_nodes):
-                        self.last_nodes.append(new_nodo_sx)
-                        self.last_nodes.append(new_nodo_dx)
-                #controllo se c'è "->"
-                if formula.root.value == "->":
-                    ins_formula_sx = []
-                    ins_formula_dx = []
-                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con "¬", a cui assegni un figlio con il nodo sinistro di formula
-                    phi = Node("¬")
-                    phi.childs.append(formula.root.childs[0])
-                    ins_formula_sx.append(Formula(phi))
-                    print("phi in beta rule implica: ", phi.childs[0].value)
-                    #aggiungi un figlio con un set vuoto a formula e aggiungi al set un nodo con il nodo destro di formula
-                    psi = formula.root.childs[1]
-                    print("psi in beta rule implica: ", psi.value)
-                    ins_formula_dx.append(Formula(psi))
-                    new_nodo_sx = self.Nodo(ins_formula_sx)
-                    new_nodo_dx = self.Nodo(ins_formula_dx)
-                    len_last_nodes = len(self.last_nodes)
-                    for node in self.last_nodes:
-                        node.childs.append(new_nodo_sx)
-                        node.childs.append(new_nodo_dx)
-                    self.last_nodes = []
-                    for i in range(len_last_nodes):
-                        self.last_nodes.append(new_nodo_sx)
-                        self.last_nodes.append(new_nodo_dx)
-            for figlio in nodo.childs:
-                self.risolvi(figlio)
+                        new_foglie.append(new_nodo_sx)
+                        new_foglie.append(new_nodo_dx)
+                    foglie = new_foglie
+            if len(nodo.childs) == 1:
+                print(foglie)
+                self.risolvi(nodo.childs[0], foglie)
+            elif len(nodo.childs) == 2:
+                print(foglie)
+                self.risolvi(nodo.childs[0], foglie[:int(len(foglie)/2)])
+                self.risolvi(nodo.childs[1], foglie[int(len(foglie)/2):])
 
 
 
@@ -263,8 +274,8 @@ class Node:
         return ret
 
 #formula soddisfacibile
-"""
-ins_formula_exp = []
+
+""" ins_formula_exp = []
 root = Node("¬")
 esempio = Formula(root)
 ins_formula_exp.append(esempio)
@@ -284,6 +295,7 @@ or2.childs.append(q)
 or2.childs.append(p) """
 
 #formula non soddisfacibile
+
 """ ins_formula_exp = []
 root = Node("¬")
 esempio = Formula(root)
@@ -313,8 +325,10 @@ implica4.childs.append(and2)
 implica4.childs.append(r)
 and2.childs.append(p)
 and2.childs.append(q) """
-#da rivedere
-ins_formula_exp = []
+
+#non soddisfacibile
+
+""" ins_formula_exp = []
 root1 = Node("->")
 esempio1 = Formula(root1)
 p = Node("p")
@@ -328,7 +342,7 @@ root1.childs.append(p)
 root1.childs.append(and1)
 and1.childs.append(q)
 and1.childs.append(r)
-root2 = Node("or")
+root2 = Node("||")
 esempio2 = Formula(root2)
 ins_formula_exp.append(esempio2)
 ins_formula_exp.append(esempio1)
@@ -343,13 +357,30 @@ esempio3 = Formula(root3)
 ins_formula_exp.append(esempio3)
 not3 = Node("¬")
 root3.childs.append(not3)
-not3.childs.append(p)
+not3.childs.append(p) """
 
-print(str(root1))
-print(str(root2))
-print(str(root3))
+#non soddisfacibile
+
+""" ins_formula_exp = []
+root = Node("¬")
+esempio = Formula(root)
+ins_formula_exp.append(esempio)
+implica1 = Node("->")
+p = Node("p")
+q = Node("q")
+esempio.termini.append(p)
+esempio.termini.append(q)
+root.childs.append(implica1)
+implica2 = Node("->")
+implica1.childs.append(implica2)
+implica1.childs.append(p)
+implica3 = Node("->")
+implica2.childs.append(implica3)
+implica2.childs.append(p)
+implica3.childs.append(p)
+implica3.childs.append(q) """
 
 tableaux = Tableaux(ins_formula_exp)
-tableaux.risolvi(tableaux.root)
+tableaux.risolvi(tableaux.root, [tableaux.root])
 print(tableaux.ret)
 print(str(tableaux.root))
