@@ -21,7 +21,7 @@ class Formula:
             # Se il nodo è un operatore, ricorsivamente otteniamo la rappresentazione delle sottoformule
             children_strings = [self._node_to_string(child) for child in node.childs]
             operator = node.value
-            if operator == "¬":
+            if operator == "!":
                 return f"{operator}{children_strings[0]}"
             elif operator == "->":
                 return f"({children_strings[0]} {operator} {children_strings[1]})"
@@ -46,7 +46,7 @@ class Node:
     
     #metodo per capire se un certo è un operatore
     def estOperator(self):
-        operators = ["&&", "||", "¬", "->"] #and, or, not, not not, implica
+        operators = ["&&", "||", "!", "->"] #and, or, not, not not, implica
         if self.value in operators:
             return True
         else:
@@ -104,7 +104,6 @@ class Tableaux():
     
     #metodo che fa side effect su self.ret, questa implementa ed analizza l'albero del tableaux, modificando opportunamente il valore self.ret 
     def risolvi(self, nodo, foglie):
-        print("chiamata")
         #controllo per sapere quando fermarsi: se ottengo self.ret == True vuol dire che ho trovato una assegnazione dei valori di verità soddisfacibile e quindi non ho più bisogno di continuare l'analisi
         if self.ret == False:
             if nodo.ins_formula is None:
@@ -112,13 +111,11 @@ class Tableaux():
             #inizio controllo dei nodi
             #1 CONTROLLO: DOPPIA NEGAZIONE/ASSEGNAZIONE BOOLEAN
             for formula in nodo.ins_formula:
-                #controllo se c'è "¬"
-                if formula.root.value == "¬":
-                    print("ho trovato come primo elemento un not")
+                #controllo se c'è "!"
+                if formula.root.value == "!":
                     #se si controllo i figli
-                    #se è uno ed è "¬"
-                    if formula.root.childs[0].value == "¬":
-                        print("ho trovato una doppia negazione")
+                    #se è uno ed è "!"
+                    if formula.root.childs[0].value == "!":
                         #lista di supporto per sapere quali sono le foglie dell'albero tableaux
                         new_foglie = []
                         for node in foglie:
@@ -130,11 +127,9 @@ class Tableaux():
                         if termine.boolean == True:
                             #se il valore assegnato al termine è true avrei una contraddizione e perciò devo chiudere la branch
                             nodo.childs = [self.Nodo([Formula(Node("X"))])]
-                            print("ho una contraddizione true/false")
                             return
                         else:
                             #non ho assegnato nessun valore di verità al termine e quindi posso dargli False
-                            print("ho assegnano un false")
                             termine.boolean = False
                             #controllo una chiusura positiva della branch, che può avvenire se mi trovo in una foglia del tableaux e se ho finito di analizzare tutte le formule del nodo
                             if len(nodo.childs) == 0 and nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
@@ -152,12 +147,10 @@ class Tableaux():
                     termine = formula.root
                     #se il valore assegnato al termine è false avrei una contraddizione e perciò devo chiudere la branch
                     if termine.boolean == False:
-                        print("ho trovato una contradizzione false/true")
                         nodo.childs = [self.Nodo([Formula(Node("X"))])]
                         return
                     else:
                         #non ho assegnato nessun valore di verità al termine e quindi posso dargli True
-                        print("ho assegnato un true")
                         termine.boolean = True
                         if len(nodo.childs) == 0 and nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
                             count = 0
@@ -172,24 +165,21 @@ class Tableaux():
                                 return
             #2 CONTROLLO: ALPHA RULE
             for formula in nodo.ins_formula:
-                #controllo se c'è "¬"
-                if formula.root.value == "¬":
+                #controllo se c'è "!"
+                if formula.root.value == "!":
                     #se il figlio è un "||"
                     if formula.root.childs[0].value == "||":
-                        print("ho trovato una alpha rule: not/or")
                         new_foglie = []
                         for node in foglie:
                             new_ins_formula = []
-                            #crea una nodo della formula phi con il ¬ + figlio sinistro dell'||
-                            phi = Node("¬")
+                            #crea una nodo della formula phi con il ! + figlio sinistro dell'||
+                            phi = Node("!")
                             phi.childs.append(formula.root.childs[0].childs[0])
                             new_ins_formula.append(Formula(phi))
-                            print("figlio di phi in aplha rule not/or: ", phi.childs[0].value)
-                            #crea una nodo della formula psi con il ¬ + figlio destro dell'||
-                            psi = Node("¬")
+                            #crea una nodo della formula psi con il ! + figlio destro dell'||
+                            psi = Node("!")
                             psi.childs.append(formula.root.childs[0].childs[1])
                             new_ins_formula.append(Formula(psi))
-                            print("figlio di psi in aplha rule not/or: ", psi.childs[0].value)
                             #crea un nodo di tableaux per ogni foglia e passalo come figlio ad ognuna
                             new_nodo = self.Nodo(new_ins_formula)
                             node.childs.append(new_nodo)
@@ -197,19 +187,16 @@ class Tableaux():
                         foglie = new_foglie
                     #se è un "->"
                     if formula.root.childs[0].value == "->":
-                        print("ho trovato una alpha rule: not/implica")
                         new_foglie = []
                         for node in foglie:
                             new_ins_formula = []
                             #crea un nodo della formula phi con il figlio sinistro dell' ->
                             phi = formula.root.childs[0].childs[0]
                             new_ins_formula.append(Formula(phi))
-                            print("phi in alpha rule not/implica: ", phi.value)
-                            #crea una nodo della formula psi con il ¬ + figlio destro dell'->
-                            psi = Node("¬")
+                            #crea una nodo della formula psi con il ! + figlio destro dell'->
+                            psi = Node("!")
                             psi.childs.append(formula.root.childs[0].childs[1])
                             new_ins_formula.append(Formula(psi))
-                            print("figlio di psi in aplha rule not/implica: ", psi.childs[0].value)
                             #crea un nodo di tableaux per ogni foglia e passalo come figlio ad ognuna
                             new_nodo = self.Nodo(new_ins_formula)
                             node.childs.append(new_nodo)
@@ -223,11 +210,9 @@ class Tableaux():
                         #crea un nodo della formula phi con il figlio sinistro dell'&&
                         phi = formula.root.childs[0]
                         new_ins_formula.append(Formula(phi))
-                        print("phi in alpha rule and: ", phi.value)
                         #crea un nodo della formula psi con il figlio destro dell'&&
                         psi = formula.root.childs[1]
                         new_ins_formula.append(Formula(psi))
-                        print("psi in alpha rule and: ", psi.value)
                         #crea un nodo di tableaux per ogni foglia e passalo come figlio ad ognuna
                         new_nodo = self.Nodo(new_ins_formula)
                         node.childs.append(new_nodo)
@@ -235,23 +220,21 @@ class Tableaux():
                     foglie = new_foglie
             #3 CONTROLLO: BETA RULE
             for formula in nodo.ins_formula:
-                #controllo se c'è "¬"
-                if formula.root.value == "¬":
+                #controllo se c'è "!"
+                if formula.root.value == "!":
                     #se il figlio è un "&&"
                     if formula.root.childs[0].value == "&&":
                         new_foglie = []
                         for node in foglie:
                             ins_formula_sx = []
                             ins_formula_dx = []
-                            #crea un nodo della formula phi con ¬ + il figlio sinistro dell'&&
-                            phi = Node("¬")
+                            #crea un nodo della formula phi con ! + il figlio sinistro dell'&&
+                            phi = Node("!")
                             phi.childs.append(formula.root.childs[0].childs[0])
                             ins_formula_sx.append(Formula(phi))
-                            print("phi di beta rule not/and: ", phi.childs[0].value)
-                            #crea un nodo della formula psi con ¬ + il figlio destro dell'&&
-                            psi = Node("¬")
+                            #crea un nodo della formula psi con ! + il figlio destro dell'&&
+                            psi = Node("!")
                             psi.childs.append(formula.root.childs[0].childs[1])
-                            print("psi di beta rule not/and: ", psi.childs[0].value)
                             ins_formula_dx.append(Formula(psi))
                             #crea un nodo del tableaux che ha come formula phi
                             new_nodo_sx = self.Nodo(ins_formula_sx)
@@ -271,11 +254,9 @@ class Tableaux():
                         #crea un nodo della formula phi con il figlio sinistro dell'||
                         phi = formula.root.childs[0]
                         ins_formula_sx.append(Formula(phi))
-                        print("phi in beta rule or: ", phi.value)
                         #crea un nodo della formula psi con il figlio destro dell'||
                         psi = formula.root.childs[1]
                         ins_formula_dx.append(Formula(psi))
-                        print("psi in beta rule or: ", psi.value)
                         #crea un nodo del tableaux che ha come formula phi
                         new_nodo_sx = self.Nodo(ins_formula_sx)
                         #crea un nodo del tableaux che ha come formula psi
@@ -291,14 +272,12 @@ class Tableaux():
                     for node in foglie:
                         ins_formula_sx = []
                         ins_formula_dx = []
-                        #crea un nodo della formula psi con ¬ + il figlio destro dell'->
-                        phi = Node("¬")
+                        #crea un nodo della formula psi con ! + il figlio destro dell'->
+                        phi = Node("!")
                         phi.childs.append(formula.root.childs[0])
                         ins_formula_sx.append(Formula(phi))
-                        print("phi in beta rule implica: ", phi.childs[0].value)
                         #crea un nodo della formula psi con il figlio destro dell'->
                         psi = formula.root.childs[1]
-                        print("psi in beta rule implica: ", psi.value)
                         ins_formula_dx.append(Formula(psi))
                         #crea un nodo del tableaux che ha come formula phi
                         new_nodo_sx = self.Nodo(ins_formula_sx)
@@ -321,7 +300,7 @@ class Tableaux():
 #formula soddisfacibile
 
 """ ins_formula_exp = []
-root = Node("¬")
+root = Node("!")
 esempio = Formula(root)
 ins_formula_exp.append(esempio)
 implica1 = Node("->")
@@ -341,8 +320,8 @@ or2.childs.append(p)
  """
 #formula non soddisfacibile
 
-""" ins_formula_exp = []
-root = Node("¬")
+ins_formula_exp = []
+root = Node("!")
 esempio = Formula(root)
 ins_formula_exp.append(esempio)
 implica1 = Node("->")
@@ -369,7 +348,7 @@ and2 = Node("&&")
 implica4.childs.append(and2)
 implica4.childs.append(r)
 and2.childs.append(p)
-and2.childs.append(q) """
+and2.childs.append(q)
 
 #non soddisfacibile
 
@@ -391,23 +370,23 @@ root2 = Node("||")
 esempio2 = Formula(root2)
 ins_formula_exp.append(esempio2)
 ins_formula_exp.append(esempio1)
-not1 = Node("¬")
-not2 = Node("¬")
+not1 = Node("!")
+not2 = Node("!")
 root2.childs.append(not1)
 root2.childs.append(not2)
 not1.childs.append(q)
 not2.childs.append(r)
-root3 = Node("¬")
+root3 = Node("!")
 esempio3 = Formula(root3)
 ins_formula_exp.append(esempio3)
-not3 = Node("¬")
+not3 = Node("!")
 root3.childs.append(not3)
 not3.childs.append(p) """
 
 #non soddisfacibile
 
 """ ins_formula_exp = []
-root = Node("¬")
+root = Node("!")
 esempio = Formula(root)
 ins_formula_exp.append(esempio)
 implica1 = Node("->")
@@ -426,7 +405,7 @@ implica3.childs.append(p)
 implica3.childs.append(q) """
 
 #non soddisfacibile
-ins_formula_exp = []
+""" ins_formula_exp = []
 root1 = Node("&&")
 esempio1 = Formula(root1)
 a = Node("a")
@@ -442,20 +421,20 @@ or1.childs.append(a)
 or1.childs.append(b)
 root2 = Node("||")
 esempio2 = Formula(root2)
-not1 = Node("¬")
+not1 = Node("!")
 not1.childs.append(b)
 root2.childs.append(not1)
-not2 = Node("¬")
+not2 = Node("!")
 not2.childs.append(c)
 root2.childs.append(not2)
-root3 = Node("¬")
+root3 = Node("!")
 esempio3 = Formula(root3)
 root3.childs.append(a)
 ins_formula_exp.append(esempio1)
 ins_formula_exp.append(esempio2)
 ins_formula_exp.append(esempio3)
-
+ """
 tableaux = Tableaux(ins_formula_exp)
 tableaux.risolvi(tableaux.root, [tableaux.root])
-print(tableaux.ret)
+print(tableaux.ret, "\n")
 print(str(tableaux.root))
