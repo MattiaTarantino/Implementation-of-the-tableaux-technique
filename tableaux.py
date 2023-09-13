@@ -1,5 +1,7 @@
 from logics.utils.parsers import classical_parser
+from logics.instances.propositional.languages import classical_language
 
+classical_language.atomics.extend(['a', 'b', 'c'])
 classical_parser.parse_replacement_dict.update({'!': '~'})
 classical_parser.unparse_replacement_dict.update({'~': '!'})
 classical_parser.parse_replacement_dict.update({'|': '∨'})
@@ -9,10 +11,10 @@ classical_parser.unparse_replacement_dict.update({'∨': '|'})
 # classe che rappresenta una formula in logica
 class Formula:
 
-    def __init__(self, expression_list):
+    def __init__(self, root):
         # lista che ricorda i singoli termini all'interno della formula
         self.termini = []
-        self.root = self.build_tree(expression_list)
+        self.root = root
 
     # metodo per stampare una formula sotto forma di stringa
     def to_string(self):
@@ -39,33 +41,28 @@ class Formula:
             # Se il nodo è un termine, restituiamo il suo valore
             return node.value
 
-    def build_tree(self, expression_list):
-        if not expression_list:
-            return None
-        print(expression_list)
-        root_value = expression_list[0]
-        root = Node(root_value)
 
-        if root.value not in ["∧", "∨", "~", "→"]:
-            if root not in self.termini:
-                self.termini.append(root)
-            else:
-                for term in self.termini:
-                    if term.value == root.value:
-                        root = term
+def build_tree(expression_list):
+    if not expression_list:
+        return None
 
-        if len(expression_list) > 1:
-            for child_expression_list in expression_list[1:]:
-                child_tree = self.build_tree(child_expression_list)
-                root.childs.append(child_tree)
+    root_value = expression_list[0]
+    root = Node(root_value)
 
-        return root
+    if len(expression_list) > 1:
+        for child_expression_list in expression_list[1:]:
+            child_tree = build_tree(child_expression_list)
+            root.childs.append(child_tree)
+
+    return root
+
 
 def print_tree(node, level=0):
     if node:
         print("  " * level + str(node.value))
         for child in node.childs:
             print_tree(child, level + 1)
+
 
 class Node:
     def __init__(self, value):
@@ -335,155 +332,98 @@ class Tableaux():
                 self.risolvi(nodo.childs[1], foglie[int(len(foglie) / 2):])
 
 
-# formula soddisfacibile
-'''
+# inp = str(input("Digita la formula: "))
 ins_formula_exp = []
-q = Node("q")
-p = Node("p")
+inp = input("Scegli una formula : ")
+if inp == '1':
+    to_parse = '!(q | p) --> (q | p)'
+    print("La formula è " + to_parse)
+    parsed = classical_parser.parse(to_parse)
+    root = build_tree(parsed)
+    formula = Formula(root)
+    formula.termini = map(Node, list(parsed.atomics_inside(classical_language)))
+    print("Rappresentazione della formula come albero:")
+    print_tree(formula.root)
+    ins_formula_exp.append(formula)
+if inp == '2':
+    to_parse = '!(((p --> q) --> p) --> p)'
+    print("La formula è " + to_parse)
+    parsed = classical_parser.parse(to_parse)
+    root = build_tree(parsed)
+    formula = Formula(root)
+    formula.termini = map(Node, list(parsed.atomics_inside(classical_language)))
+    print("Rappresentazione della formula come albero:")
+    print_tree(formula.root)
+    ins_formula_exp.append(formula)
+if inp == '3':
+    to_parse = '! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )'
+    print("La formula è " + to_parse)
+    parsed = classical_parser.parse(to_parse)
+    root = build_tree(parsed)
+    formula = Formula(root)
+    formula.termini = map(Node, list(parsed.atomics_inside(classical_language)))
+    print("Rappresentazione della formula come albero:")
+    print_tree(formula.root)
+    ins_formula_exp.append(formula)
+if inp == '4':
+    to_parse = '! ((q | p) --> (q & p))'
+    print("La formula è " + to_parse)
+    parsed = classical_parser.parse(to_parse)
+    root = build_tree(parsed)
+    formula = Formula(root)
+    formula.termini = map(Node, list(parsed.atomics_inside(classical_language)))
+    print("Rappresentazione della formula come albero:")
+    print_tree(formula.root)
+    ins_formula_exp.append(formula)
+if inp == '5':
+    to_parse1 = 'p --> (q & r)'
+    to_parse2 = '!q | !r'
+    to_parse3 = '!!p'
+    print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
+    parsed1 = classical_parser.parse(to_parse1)
+    parsed2 = classical_parser.parse(to_parse2)
+    parsed3 = classical_parser.parse(to_parse3)
+    root1 = build_tree(parsed1)
+    root2 = build_tree(parsed2)
+    root3 = build_tree(parsed3)
+    formula1 = Formula(root1)
+    formula2 = Formula(root2)
+    formula3 = Formula(root3)
+    formula1.termini = map(Node, list(parsed1.atomics_inside(classical_language)))
+    formula2.termini = map(Node, list(parsed2.atomics_inside(classical_language)))
+    formula3.termini = map(Node, list(parsed3.atomics_inside(classical_language)))
+    print("Rappresentazione della formule come albero:")
+    print_tree(formula1.root)
+    print_tree(formula2.root)
+    print_tree(formula3.root)
+    ins_formula_exp.append(formula1)
+    ins_formula_exp.append(formula2)
+    ins_formula_exp.append(formula3)
+if inp == '6':
+    to_parse1 = '(a | b) & c'
+    to_parse2 = '!b | !c'
+    to_parse3 = '!a'
+    print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
+    parsed1 = classical_parser.parse(to_parse1)
+    parsed2 = classical_parser.parse(to_parse2)
+    parsed3 = classical_parser.parse(to_parse3)
+    root1 = build_tree(parsed1)
+    root2 = build_tree(parsed2)
+    root3 = build_tree(parsed3)
+    formula1 = Formula(root1)
+    formula2 = Formula(root2)
+    formula3 = Formula(root3)
+    formula1.termini = map(Node, list(parsed1.atomics_inside(classical_language)))
+    formula2.termini = map(Node, list(parsed2.atomics_inside(classical_language)))
+    formula3.termini = map(Node, list(parsed3.atomics_inside(classical_language)))
+    print("Rappresentazione della formule come albero:")
+    print_tree(formula1.root)
+    print_tree(formula2.root)
+    print_tree(formula3.root)
+    ins_formula_exp.append(formula1)
+    ins_formula_exp.append(formula2)
+    ins_formula_exp.append(formula3)
 
-root = Node("!")
-or1 = Node("|")
-or2 = Node("|")
-implica1 = Node("-->")
-
-esempio = Formula(root)
-ins_formula_exp.append(esempio)
-root.childs.append(implica1)
-implica1.childs.append(or1)
-implica1.childs.append(or2)
-esempio.termini.append(q)
-esempio.termini.append(p)
-or1.childs.append(q)
-or1.childs.append(p)
-or2.childs.append(q)
-or2.childs.append(p)
-'''
-
-#inp = str(input("Digita la formula: "))
-inp = classical_parser.parse('!((q | p) --> (q & p))')
-print(inp)
-formula = Formula(inp)
-print_tree(formula.root)
-
-"""
-# formula non soddisfacibile
-
-ins_formula_exp = []
-root = Node("!")
-esempio = Formula(root)
-ins_formula_exp.append(esempio)
-implica1 = Node("-->")
-root.childs.append(implica1)
-and1 = Node("&")
-implica2 = Node("-->")
-implica1.childs.append(and1)
-implica1.childs.append(implica2)
-p = Node("p")
-esempio.termini.append(p)
-q = Node("q")
-esempio.termini.append(q)
-r = Node("r")
-esempio.termini.append(r)
-implica2.childs.append(p)
-implica2.childs.append(r)
-implica3 = Node("-->")
-implica4 = Node("-->")
-and1.childs.append(implica3)
-and1.childs.append(implica4)
-implica3.childs.append(p)
-implica3.childs.append(q)
-and2 = Node("&")
-implica4.childs.append(and2)
-implica4.childs.append(r)
-and2.childs.append(p)
-and2.childs.append(q)
-"""
-# non soddisfacibile
-
-""" ins_formula_exp = []
-root1 = Node("-->")
-esempio1 = Formula(root1)
-p = Node("p")
-esempio1.termini.append(p)
-q = Node("q")
-esempio1.termini.append(q)
-r = Node("r")
-esempio1.termini.append(r)
-and1 = Node("&")
-root1.childs.append(p)
-root1.childs.append(and1)
-and1.childs.append(q)
-and1.childs.append(r)
-root2 = Node("|")
-esempio2 = Formula(root2)
-ins_formula_exp.append(esempio2)
-ins_formula_exp.append(esempio1)
-not1 = Node("!")
-not2 = Node("!")
-root2.childs.append(not1)
-root2.childs.append(not2)
-not1.childs.append(q)
-not2.childs.append(r)
-root3 = Node("!")
-esempio3 = Formula(root3)
-ins_formula_exp.append(esempio3)
-not3 = Node("!")
-root3.childs.append(not3)
-not3.childs.append(p) """
-
-# non soddisfacibile
-
-""" ins_formula_exp = []
-root = Node("!")
-esempio = Formula(root)
-ins_formula_exp.append(esempio)
-implica1 = Node("-->")
-p = Node("p")
-q = Node("q")
-esempio.termini.append(p)
-esempio.termini.append(q)
-root.childs.append(implica1)
-implica2 = Node("-->")
-implica1.childs.append(implica2)
-implica1.childs.append(p)
-implica3 = Node("->")
-implica2.childs.append(implica3)
-implica2.childs.append(p)
-implica3.childs.append(p)
-implica3.childs.append(q) """
-
-# non soddisfacibile
-""" ins_formula_exp = []
-root1 = Node("&")
-esempio1 = Formula(root1)
-a = Node("a")
-esempio1.termini.append(a)
-b = Node("b")
-esempio1.termini.append(b)
-c = Node("c")
-esempio1.termini.append(c)
-or1 = Node("|")
-root1.childs.append(or1)
-root1.childs.append(c)
-or1.childs.append(a)
-or1.childs.append(b)
-root2 = Node("|")
-esempio2 = Formula(root2)
-not1 = Node("!")
-not1.childs.append(b)
-root2.childs.append(not1)
-not2 = Node("!")
-not2.childs.append(c)
-root2.childs.append(not2)
-root3 = Node("!")
-esempio3 = Formula(root3)
-root3.childs.append(a)
-ins_formula_exp.append(esempio1)
-ins_formula_exp.append(esempio2)
-ins_formula_exp.append(esempio3)
- """
-ins_formula_exp = []
-ins_formula_exp.append(formula)
 tableaux = Tableaux(ins_formula_exp)
 tableaux.risolvi(tableaux.root, [tableaux.root])
 print(tableaux.ret, "\n")
