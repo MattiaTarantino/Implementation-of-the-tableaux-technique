@@ -393,13 +393,13 @@ if inp == '5':
     parsed2 = classical_parser.parse(to_parse2)
     parsed3 = classical_parser.parse(to_parse3)
     root1, termini1 = build_tree(parsed1, [])
-    root2, termini2 = build_tree(parsed2, [])
-    root3, termini3 = build_tree(parsed3, [])
+    root2, termini2 = build_tree(parsed2, termini1)
+    root3, termini3 = build_tree(parsed3, termini2)
     formula1 = Formula(root1)
     formula2 = Formula(root2)
     formula3 = Formula(root3)
-    formula1.termini = termini1
-    formula2.termini = termini1
+    formula1.termini = termini3
+    formula2.termini = termini3
     formula3.termini = termini1
     print("Rappresentazione della formule come albero:")
     print_tree(formula1.root)
@@ -416,15 +416,15 @@ if inp == '6':
     parsed1 = classical_parser.parse(to_parse1)
     parsed2 = classical_parser.parse(to_parse2)
     parsed3 = classical_parser.parse(to_parse3)
-    root1 = build_tree(parsed1, [])
-    root2 = build_tree(parsed2, [])
-    root3 = build_tree(parsed3, [])
+    root1, termini1 = build_tree(parsed1, [])
+    root2, termini2 = build_tree(parsed2, termini1)
+    root3, termini3 = build_tree(parsed3, termini2)
     formula1 = Formula(root1)
     formula2 = Formula(root2)
     formula3 = Formula(root3)
-    formula1.termini = map(Node, list(parsed1.atomics_inside(classical_language)))
-    formula2.termini = map(Node, list(parsed2.atomics_inside(classical_language)))
-    formula3.termini = map(Node, list(parsed3.atomics_inside(classical_language)))
+    formula1.termini = termini3
+    formula2.termini = termini3
+    formula3.termini = termini3
     print("Rappresentazione della formule come albero:")
     print_tree(formula1.root)
     print_tree(formula2.root)
