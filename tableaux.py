@@ -173,7 +173,7 @@ class Tableaux():
                             # non ho assegnato nessun valore di verità al termine e quindi posso dargli False
                             termine.boolean = False
                             # controllo una chiusura positiva della branch, che può avvenire se mi trovo in una foglia del tableaux e se ho finito di analizzare tutte le formule del nodo
-                            if len(nodo.childs) == 0 :
+                            if len(nodo.childs) == 0:
                                 if nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
                                     count = 0
                                     # controlla i boolean dei termini id ins_formula
@@ -343,9 +343,23 @@ class Tableaux():
 
 # inp = str(input("Digita la formula: "))
 ins_formula_exp = []
-inp = input("Scegli una formula : ")
-if inp == '1':
-    to_parse = '!((q | p) --> (p | q))'
+print("Scegli una formula su cui applicare la tecnica del tableaux:")
+print("1) !((q | p) --> (p | q))")
+print("2) !(((p --> q) --> p) --> p)")
+print("3) ! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )")
+print("4) !( (q | p) --> (q & p) )")
+print("5) p --> (q & r) , !q | !r , !!p")
+print("6) (a | b) & c , !b | !c , !a\n")
+inp = int(input())
+if inp < 5:
+    if inp == 1:
+        to_parse = '!((q | p) --> (p | q))'
+    elif inp == 2:
+        to_parse = '!(((p --> q) --> p) --> p)'
+    elif inp == 3:
+        to_parse = '! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )'
+    elif inp == 4:
+        to_parse = '!( (q | p) --> (q & p) )'
     print("La formula è " + to_parse)
     parsed = classical_parser.parse(to_parse)
     root, termini = build_tree(parsed, [])
@@ -354,64 +368,15 @@ if inp == '1':
     print("Rappresentazione della formula come albero:")
     print_tree(formula.root)
     ins_formula_exp.append(formula)
-if inp == '2':
-    to_parse = '!(((p --> q) --> p) --> p)'
-    print("La formula è " + to_parse)
-    parsed = classical_parser.parse(to_parse)
-    root, termini = build_tree(parsed, [])
-    formula = Formula(root)
-    formula.termini = termini
-    print("Rappresentazione della formula come albero:")
-    print_tree(formula.root)
-    ins_formula_exp.append(formula)
-if inp == '3':
-    to_parse = '! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )'
-    print("La formula è " + to_parse)
-    parsed = classical_parser.parse(to_parse)
-    root, termini = build_tree(parsed, [])
-    formula = Formula(root)
-    formula.termini = termini
-    print("Rappresentazione della formula come albero:")
-    print_tree(formula.root)
-    ins_formula_exp.append(formula)
-if inp == '4':
-    to_parse = '!( (q | p) --> (q & p) )'
-    print("La formula è " + to_parse)
-    parsed = classical_parser.parse(to_parse)
-    root, termini = build_tree(parsed, [])
-    formula = Formula(root)
-    formula.termini = termini
-    print("Rappresentazione della formula come albero:")
-    print_tree(formula.root)
-    ins_formula_exp.append(formula)
-if inp == '5':
-    to_parse1 = 'p --> (q & r)'
-    to_parse2 = '!q | !r'
-    to_parse3 = '!!p'
-    print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
-    parsed1 = classical_parser.parse(to_parse1)
-    parsed2 = classical_parser.parse(to_parse2)
-    parsed3 = classical_parser.parse(to_parse3)
-    root1, termini1 = build_tree(parsed1, [])
-    root2, termini2 = build_tree(parsed2, termini1)
-    root3, termini3 = build_tree(parsed3, termini2)
-    formula1 = Formula(root1)
-    formula2 = Formula(root2)
-    formula3 = Formula(root3)
-    formula1.termini = termini3
-    formula2.termini = termini3
-    formula3.termini = termini1
-    print("Rappresentazione della formule come albero:")
-    print_tree(formula1.root)
-    print_tree(formula2.root)
-    print_tree(formula3.root)
-    ins_formula_exp.append(formula1)
-    ins_formula_exp.append(formula2)
-    ins_formula_exp.append(formula3)
-if inp == '6':
-    to_parse1 = '(a | b) & c'
-    to_parse2 = '!b | !c'
-    to_parse3 = '!a'
+if inp == 5 or inp == 6:
+    if inp == 5:
+        to_parse1 = 'p --> (q & r)'
+        to_parse2 = '!q | !r'
+        to_parse3 = '!!p'
+    elif inp == 6:
+        to_parse1 = '(a | b) & c'
+        to_parse2 = '!b | !c'
+        to_parse3 = '!a'
     print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
     parsed1 = classical_parser.parse(to_parse1)
     parsed2 = classical_parser.parse(to_parse2)
