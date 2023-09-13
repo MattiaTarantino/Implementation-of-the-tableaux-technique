@@ -42,19 +42,26 @@ class Formula:
             return node.value
 
 
-def build_tree(expression_list):
+def build_tree(expression_list, termini):
     if not expression_list:
         return None
 
     root_value = expression_list[0]
     root = Node(root_value)
 
+    if root_value not in ["∧", "∨", "~", "→"]:
+        for term in termini:
+            if term.value == root_value:
+                root = term
+        if root not in termini:
+            termini.append(root)
+
     if len(expression_list) > 1:
         for child_expression_list in expression_list[1:]:
-            child_tree = build_tree(child_expression_list)
+            child_tree, termini = build_tree(child_expression_list, termini)
             root.childs.append(child_tree)
 
-    return root
+    return root, termini
 
 
 def print_tree(node, level=0):
@@ -160,13 +167,35 @@ class Tableaux():
                         termine = formula.root.childs[0]
                         if termine.boolean == True:
                             # se il valore assegnato al termine è true avrei una contraddizione e perciò devo chiudere la branch
-                            nodo.childs = [self.Nodo([Formula("X")])]
+                            nodo.childs = [self.Nodo([Formula(Node("X"))])]
                             return
                         else:
                             # non ho assegnato nessun valore di verità al termine e quindi posso dargli False
                             termine.boolean = False
                             # controllo una chiusura positiva della branch, che può avvenire se mi trovo in una foglia del tableaux e se ho finito di analizzare tutte le formule del nodo
-                            if len(nodo.childs) == 0 and nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
+                            if len(nodo.childs) == 0 :
+                                if nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
+                                    count = 0
+                                    # controlla i boolean dei termini id ins_formula
+                                    for term in self.terms:
+                                        # se sono tutti diversi da None return true
+                                        if term.boolean is not None:
+                                            count += 1
+                                    if count == self.terms_len:
+                                        self.ret = True
+                                        nodo.childs = [self.Nodo([Formula(Node("O"))])]
+                                        return
+                if formula.root.estTermine():
+                    termine = formula.root
+                    # se il valore assegnato al termine è false avrei una contraddizione e perciò devo chiudere la branch
+                    if termine.boolean == False:
+                        nodo.childs = [self.Nodo([Formula(Node("X"))])]
+                        return
+                    else:
+                        # non ho assegnato nessun valore di verità al termine e quindi posso dargli True
+                        termine.boolean = True
+                        if len(nodo.childs) == 0:
+                            if nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
                                 count = 0
                                 # controlla i boolean dei termini id ins_formula
                                 for term in self.terms:
@@ -175,28 +204,8 @@ class Tableaux():
                                         count += 1
                                 if count == self.terms_len:
                                     self.ret = True
-                                    nodo.childs = [self.Nodo([Formula("O")])]
+                                    nodo.childs = [self.Nodo([Formula(Node("O"))])]
                                     return
-                if formula.root.estTermine():
-                    termine = formula.root
-                    # se il valore assegnato al termine è false avrei una contraddizione e perciò devo chiudere la branch
-                    if termine.boolean == False:
-                        nodo.childs = [self.Nodo([Formula("X")])]
-                        return
-                    else:
-                        # non ho assegnato nessun valore di verità al termine e quindi posso dargli True
-                        termine.boolean = True
-                        if len(nodo.childs) == 0 and nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
-                            count = 0
-                            # controlla i boolean dei termini id ins_formula
-                            for term in self.terms:
-                                # se sono tutti diversi da None return true
-                                if term.boolean is not None:
-                                    count += 1
-                            if count == self.terms_len:
-                                self.ret = True
-                                nodo.childs = [self.Nodo([Formula("O")])]
-                                return
             # 2 CONTROLLO: ALPHA RULE
             for formula in nodo.ins_formula:
                 # controllo se c'è "!"
@@ -336,12 +345,12 @@ class Tableaux():
 ins_formula_exp = []
 inp = input("Scegli una formula : ")
 if inp == '1':
-    to_parse = '!(q | p) --> (q | p)'
+    to_parse = '!((q | p) --> (p | q))'
     print("La formula è " + to_parse)
     parsed = classical_parser.parse(to_parse)
-    root = build_tree(parsed)
+    root, termini = build_tree(parsed, [])
     formula = Formula(root)
-    formula.termini = map(Node, list(parsed.atomics_inside(classical_language)))
+    formula.termini = termini
     print("Rappresentazione della formula come albero:")
     print_tree(formula.root)
     ins_formula_exp.append(formula)
@@ -349,9 +358,9 @@ if inp == '2':
     to_parse = '!(((p --> q) --> p) --> p)'
     print("La formula è " + to_parse)
     parsed = classical_parser.parse(to_parse)
-    root = build_tree(parsed)
+    root, termini = build_tree(parsed, [])
     formula = Formula(root)
-    formula.termini = map(Node, list(parsed.atomics_inside(classical_language)))
+    formula.termini = termini
     print("Rappresentazione della formula come albero:")
     print_tree(formula.root)
     ins_formula_exp.append(formula)
@@ -359,19 +368,19 @@ if inp == '3':
     to_parse = '! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )'
     print("La formula è " + to_parse)
     parsed = classical_parser.parse(to_parse)
-    root = build_tree(parsed)
+    root, termini = build_tree(parsed, [])
     formula = Formula(root)
-    formula.termini = map(Node, list(parsed.atomics_inside(classical_language)))
+    formula.termini = termini
     print("Rappresentazione della formula come albero:")
     print_tree(formula.root)
     ins_formula_exp.append(formula)
 if inp == '4':
-    to_parse = '! ((q | p) --> (q & p))'
+    to_parse = '!( (q | p) --> (q & p) )'
     print("La formula è " + to_parse)
     parsed = classical_parser.parse(to_parse)
-    root = build_tree(parsed)
+    root, termini = build_tree(parsed, [])
     formula = Formula(root)
-    formula.termini = map(Node, list(parsed.atomics_inside(classical_language)))
+    formula.termini = termini
     print("Rappresentazione della formula come albero:")
     print_tree(formula.root)
     ins_formula_exp.append(formula)
@@ -383,15 +392,15 @@ if inp == '5':
     parsed1 = classical_parser.parse(to_parse1)
     parsed2 = classical_parser.parse(to_parse2)
     parsed3 = classical_parser.parse(to_parse3)
-    root1 = build_tree(parsed1)
-    root2 = build_tree(parsed2)
-    root3 = build_tree(parsed3)
+    root1, termini1 = build_tree(parsed1, [])
+    root2, termini2 = build_tree(parsed2, [])
+    root3, termini3 = build_tree(parsed3, [])
     formula1 = Formula(root1)
     formula2 = Formula(root2)
     formula3 = Formula(root3)
-    formula1.termini = map(Node, list(parsed1.atomics_inside(classical_language)))
-    formula2.termini = map(Node, list(parsed2.atomics_inside(classical_language)))
-    formula3.termini = map(Node, list(parsed3.atomics_inside(classical_language)))
+    formula1.termini = termini1
+    formula2.termini = termini1
+    formula3.termini = termini1
     print("Rappresentazione della formule come albero:")
     print_tree(formula1.root)
     print_tree(formula2.root)
@@ -407,9 +416,9 @@ if inp == '6':
     parsed1 = classical_parser.parse(to_parse1)
     parsed2 = classical_parser.parse(to_parse2)
     parsed3 = classical_parser.parse(to_parse3)
-    root1 = build_tree(parsed1)
-    root2 = build_tree(parsed2)
-    root3 = build_tree(parsed3)
+    root1 = build_tree(parsed1, [])
+    root2 = build_tree(parsed2, [])
+    root3 = build_tree(parsed3, [])
     formula1 = Formula(root1)
     formula2 = Formula(root2)
     formula3 = Formula(root3)
