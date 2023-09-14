@@ -343,16 +343,20 @@ class Tableaux():
 
 # inp = str(input("Digita la formula: "))
 ins_formula_exp = []
-print("Scegli una formula su cui applicare la tecnica del tableaux:")
+print("0) Inserisci da input una formula")
 print("1) !((q | p) --> (p | q))")
 print("2) !(((p --> q) --> p) --> p)")
 print("3) ! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )")
 print("4) !( (q | p) --> (q & p) )")
 print("5) p --> (q & r) , !q | !r , !!p")
-print("6) (a | b) & c , !b | !c , !a\n")
-inp = int(input())
+print("6) (a | b) & c , !b | !c , !a")
+print("7) Inserisci da input due formule")
+print("8) Inserisci da input tre formule")
+inp = int(input("Scegli una formula su cui applicare la tecnica del tableaux: "))
 if inp < 5:
-    if inp == 1:
+    if inp == 0:
+        to_parse = str(input("Digita la formula: "))
+    elif inp == 1:
         to_parse = '!((q | p) --> (p | q))'
     elif inp == 2:
         to_parse = '!(((p --> q) --> p) --> p)'
@@ -368,7 +372,7 @@ if inp < 5:
     print("Rappresentazione della formula come albero:")
     print_tree(formula.root)
     ins_formula_exp.append(formula)
-if inp == 5 or inp == 6:
+elif inp == 5 or inp == 6:
     if inp == 5:
         to_parse1 = 'p --> (q & r)'
         to_parse2 = '!q | !r'
@@ -377,6 +381,47 @@ if inp == 5 or inp == 6:
         to_parse1 = '(a | b) & c'
         to_parse2 = '!b | !c'
         to_parse3 = '!a'
+    print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
+    parsed1 = classical_parser.parse(to_parse1)
+    parsed2 = classical_parser.parse(to_parse2)
+    parsed3 = classical_parser.parse(to_parse3)
+    root1, termini1 = build_tree(parsed1, [])
+    root2, termini2 = build_tree(parsed2, termini1)
+    root3, termini3 = build_tree(parsed3, termini2)
+    formula1 = Formula(root1)
+    formula2 = Formula(root2)
+    formula3 = Formula(root3)
+    formula1.termini = termini3
+    formula2.termini = termini3
+    formula3.termini = termini3
+    print("Rappresentazione della formule come albero:")
+    print_tree(formula1.root)
+    print_tree(formula2.root)
+    print_tree(formula3.root)
+    ins_formula_exp.append(formula1)
+    ins_formula_exp.append(formula2)
+    ins_formula_exp.append(formula3)
+elif inp == 7:
+    to_parse1 = str(input("Digita la prima formula: "))
+    to_parse2 = str(input("Digita la seconda formula: "))
+    print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2)
+    parsed1 = classical_parser.parse(to_parse1)
+    parsed2 = classical_parser.parse(to_parse2)
+    root1, termini1 = build_tree(parsed1, [])
+    root2, termini2 = build_tree(parsed2, termini1)
+    formula1 = Formula(root1)
+    formula2 = Formula(root2)
+    formula1.termini = termini2
+    formula2.termini = termini2
+    print("Rappresentazione della formule come albero:")
+    print_tree(formula1.root)
+    print_tree(formula2.root)
+    ins_formula_exp.append(formula1)
+    ins_formula_exp.append(formula2)
+elif inp == 8:
+    to_parse1 = str(input("Digita la prima formula: "))
+    to_parse2 = str(input("Digita la seconda formula: "))
+    to_parse3 = str(input("Digita la terza formula: "))
     print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
     parsed1 = classical_parser.parse(to_parse1)
     parsed2 = classical_parser.parse(to_parse2)
