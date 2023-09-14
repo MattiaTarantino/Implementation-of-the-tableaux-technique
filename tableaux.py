@@ -1,7 +1,7 @@
 from logics.utils.parsers import classical_parser
 from logics.instances.propositional.languages import classical_language
 
-classical_language.atomics.extend(['a', 'b', 'c'])
+classical_language.atomics.extend(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
 classical_parser.parse_replacement_dict.update({'!': '~'})
 classical_parser.unparse_replacement_dict.update({'~': '!'})
 classical_parser.parse_replacement_dict.update({'|': '∨'})
@@ -162,50 +162,6 @@ class Tableaux():
                         for node in foglie:
                             self.doppia_negazione(node, formula, new_foglie)
                         foglie = new_foglie
-                    # se è un termine
-                    if formula.root.childs[0].estTermine():
-                        termine = formula.root.childs[0]
-                        if termine.boolean == True:
-                            # se il valore assegnato al termine è true avrei una contraddizione e perciò devo chiudere la branch
-                            nodo.childs = [self.Nodo([Formula(Node("X"))])]
-                            return
-                        else:
-                            # non ho assegnato nessun valore di verità al termine e quindi posso dargli False
-                            termine.boolean = False
-                            # controllo una chiusura positiva della branch, che può avvenire se mi trovo in una foglia del tableaux e se ho finito di analizzare tutte le formule del nodo
-                            if len(nodo.childs) == 0:
-                                if nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
-                                    count = 0
-                                    # controlla i boolean dei termini id ins_formula
-                                    for term in self.terms:
-                                        # se sono tutti diversi da None return true
-                                        if term.boolean is not None:
-                                            count += 1
-                                    if count == self.terms_len:
-                                        self.ret = True
-                                        nodo.childs = [self.Nodo([Formula(Node("O"))])]
-                                        return
-                if formula.root.estTermine():
-                    termine = formula.root
-                    # se il valore assegnato al termine è false avrei una contraddizione e perciò devo chiudere la branch
-                    if termine.boolean == False:
-                        nodo.childs = [self.Nodo([Formula(Node("X"))])]
-                        return
-                    else:
-                        # non ho assegnato nessun valore di verità al termine e quindi posso dargli True
-                        termine.boolean = True
-                        if len(nodo.childs) == 0:
-                            if nodo.ins_formula.index(formula) == len(nodo.ins_formula) - 1:
-                                count = 0
-                                # controlla i boolean dei termini id ins_formula
-                                for term in self.terms:
-                                    # se sono tutti diversi da None return true
-                                    if term.boolean is not None:
-                                        count += 1
-                                if count == self.terms_len:
-                                    self.ret = True
-                                    nodo.childs = [self.Nodo([Formula(Node("O"))])]
-                                    return
             # 2 CONTROLLO: ALPHA RULE
             for formula in nodo.ins_formula:
                 # controllo se c'è "!"
@@ -331,6 +287,49 @@ class Tableaux():
                         new_foglie.append(new_nodo_sx)
                         new_foglie.append(new_nodo_dx)
                     foglie = new_foglie
+            for formula in nodo.ins_formula:
+                if formula.root.value == "~":
+                    if formula.root.childs[0].estTermine():
+                        termine = formula.root.childs[0]
+                        if termine.boolean == True:
+                            # se il valore assegnato al termine è true avrei una contraddizione e perciò devo chiudere la branch
+                            nodo.childs = [self.Nodo([Formula(Node("X"))])]
+                            return
+                        else:
+                            # non ho assegnato nessun valore di verità al termine e quindi posso dargli False
+                            termine.boolean = False
+                            # controllo una chiusura positiva della branch, che può avvenire se mi trovo in una foglia del tableaux e se ho finito di analizzare tutte le formule del nodo
+                            if len(nodo.childs) == 0:
+                                count = 0
+                                # controlla i boolean dei termini id ins_formula
+                                for term in self.terms:
+                                    # se sono tutti diversi da None return true
+                                    if term.boolean is not None:
+                                        count += 1
+                                if count == self.terms_len:
+                                    self.ret = True
+                                    nodo.childs = [self.Nodo([Formula(Node("O"))])]
+                                    return
+                if formula.root.estTermine():
+                    termine = formula.root
+                    # se il valore assegnato al termine è false avrei una contraddizione e perciò devo chiudere la branch
+                    if termine.boolean == False:
+                        nodo.childs = [self.Nodo([Formula(Node("X"))])]
+                        return
+                    else:
+                        # non ho assegnato nessun valore di verità al termine e quindi posso dargli True
+                        termine.boolean = True
+                        if len(nodo.childs) == 0:
+                            count = 0
+                            # controlla i boolean dei termini id ins_formula
+                            for term in self.terms:
+                                # se sono tutti diversi da None return true
+                                if term.boolean is not None:
+                                    count += 1
+                            if count == self.terms_len:
+                                self.ret = True
+                                nodo.childs = [self.Nodo([Formula(Node("O"))])]
+                                return
             # a seconda del numero di figli del nodo attuale so come dividere le foglie
             # se ho un figlio gli passo tutte le foglie
             if len(nodo.childs) == 1:
@@ -343,15 +342,14 @@ class Tableaux():
 
 # inp = str(input("Digita la formula: "))
 ins_formula_exp = []
-print("0) Inserisci da input una formula")
+termini = []
 print("1) !((q | p) --> (p | q))")
 print("2) !(((p --> q) --> p) --> p)")
 print("3) ! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )")
 print("4) !( (q | p) --> (q & p) )")
 print("5) p --> (q & r) , !q | !r , !!p")
 print("6) (a | b) & c , !b | !c , !a")
-print("7) Inserisci da input due formule")
-print("8) Inserisci da input tre formule")
+print("7) Inserisci le formule da input")
 inp = int(input("Scegli una formula su cui applicare la tecnica del tableaux: "))
 if inp < 5:
     if inp == 0:
@@ -366,7 +364,7 @@ if inp < 5:
         to_parse = '!( (q | p) --> (q & p) )'
     print("La formula è " + to_parse)
     parsed = classical_parser.parse(to_parse)
-    root, termini = build_tree(parsed, [])
+    root, termini = build_tree(parsed, termini)
     formula = Formula(root)
     formula.termini = termini
     print("Rappresentazione della formula come albero:")
@@ -385,15 +383,15 @@ elif inp == 5 or inp == 6:
     parsed1 = classical_parser.parse(to_parse1)
     parsed2 = classical_parser.parse(to_parse2)
     parsed3 = classical_parser.parse(to_parse3)
-    root1, termini1 = build_tree(parsed1, [])
-    root2, termini2 = build_tree(parsed2, termini1)
-    root3, termini3 = build_tree(parsed3, termini2)
+    root1, termini = build_tree(parsed1, termini)
+    root2, termini = build_tree(parsed2, termini)
+    root3, termini = build_tree(parsed3, termini)
     formula1 = Formula(root1)
     formula2 = Formula(root2)
     formula3 = Formula(root3)
-    formula1.termini = termini3
-    formula2.termini = termini3
-    formula3.termini = termini3
+    formula1.termini = termini
+    formula2.termini = termini
+    formula3.termini = termini
     print("Rappresentazione della formule come albero:")
     print_tree(formula1.root)
     print_tree(formula2.root)
@@ -402,48 +400,26 @@ elif inp == 5 or inp == 6:
     ins_formula_exp.append(formula2)
     ins_formula_exp.append(formula3)
 elif inp == 7:
-    to_parse1 = str(input("Digita la prima formula: "))
-    to_parse2 = str(input("Digita la seconda formula: "))
-    print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2)
-    parsed1 = classical_parser.parse(to_parse1)
-    parsed2 = classical_parser.parse(to_parse2)
-    root1, termini1 = build_tree(parsed1, [])
-    root2, termini2 = build_tree(parsed2, termini1)
-    formula1 = Formula(root1)
-    formula2 = Formula(root2)
-    formula1.termini = termini2
-    formula2.termini = termini2
-    print("Rappresentazione della formule come albero:")
-    print_tree(formula1.root)
-    print_tree(formula2.root)
-    ins_formula_exp.append(formula1)
-    ins_formula_exp.append(formula2)
-elif inp == 8:
-    to_parse1 = str(input("Digita la prima formula: "))
-    to_parse2 = str(input("Digita la seconda formula: "))
-    to_parse3 = str(input("Digita la terza formula: "))
-    print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
-    parsed1 = classical_parser.parse(to_parse1)
-    parsed2 = classical_parser.parse(to_parse2)
-    parsed3 = classical_parser.parse(to_parse3)
-    root1, termini1 = build_tree(parsed1, [])
-    root2, termini2 = build_tree(parsed2, termini1)
-    root3, termini3 = build_tree(parsed3, termini2)
-    formula1 = Formula(root1)
-    formula2 = Formula(root2)
-    formula3 = Formula(root3)
-    formula1.termini = termini3
-    formula2.termini = termini3
-    formula3.termini = termini3
-    print("Rappresentazione della formule come albero:")
-    print_tree(formula1.root)
-    print_tree(formula2.root)
-    print_tree(formula3.root)
-    ins_formula_exp.append(formula1)
-    ins_formula_exp.append(formula2)
-    ins_formula_exp.append(formula3)
+    to_parse = str(input("Digita la formula (stringa vuota per terminare): "))
+    while to_parse != "":
+        parsed = classical_parser.parse(to_parse)
+        root, termini = build_tree(parsed, termini)
+        formula = Formula(root)
+        formula.termini = termini
+        print("Rappresentazione della formula come albero:")
+        print_tree(formula.root)
+        ins_formula_exp.append(formula)
+        to_parse = str(input("Digita la formula (stringa vuota per terminare): "))
 
 tableaux = Tableaux(ins_formula_exp)
 tableaux.risolvi(tableaux.root, [tableaux.root])
-print(tableaux.ret, "\n")
+print("\n")
+print("Rappresentazione dell'albero tableaux:\n")
 print(str(tableaux.root))
+if tableaux.ret:
+    print("La formula è soddisfacibile\n")
+    for term in tableaux.terms:
+        print(term.value + " = " + str(term.boolean))
+else:
+    print("La formula non è soddisfacibile\n")
+
