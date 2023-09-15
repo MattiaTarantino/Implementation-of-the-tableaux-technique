@@ -29,7 +29,7 @@ class Formula:
 
         if node.estOperator():
             # Se il nodo è un operatore, ricorsivamente otteniamo la rappresentazione delle sottoformule
-            children_strings = [self._node_to_string(child) for child in node.childs]
+            children_strings = [self._node_to_string(child) for child in node.children]
             operator = node.value
             if operator == "~":
                 return f"{operator}{children_strings[0]}"
@@ -59,7 +59,7 @@ def build_tree(expression_list, termini):
     if len(expression_list) > 1:
         for child_expression_list in expression_list[1:]:
             child_tree, termini = build_tree(child_expression_list, termini)
-            root.childs.append(child_tree)
+            root.children.append(child_tree)
 
     return root, termini
 
@@ -67,14 +67,14 @@ def build_tree(expression_list, termini):
 def print_tree(node, level=0):
     if node:
         print("  " * level + str(node.value))
-        for child in node.childs:
+        for child in node.children:
             print_tree(child, level + 1)
 
 
 class Node:
     def __init__(self, value):
         # eventuali figli
-        self.childs = []
+        self.children = []
         # valore che può essere un operatore o un termine
         self.value = value
         # valore di verità che è stato assegnato a un termine
@@ -82,7 +82,7 @@ class Node:
 
     # metodo per sapere se ho un termine
     def estTermine(self):
-        return len(self.childs) == 0
+        return len(self.children) == 0
 
     # metodo per capire se un certo è un operatore
     def estOperator(self):
@@ -95,7 +95,7 @@ class Node:
     # metodo per rappresentare l'albero della formula logica
     def __str__(self, level=0):
         ret = "\t" * level + repr(self.value) + "\n"
-        for child in self.childs:
+        for child in self.children:
             ret += child.__str__(level + 1)
         return ret
 
@@ -108,7 +108,7 @@ class Tableaux():
         def __init__(self, ins_formula):
             # le formule che appartengono al singolo nodo (come albero)
             self.ins_formula = ins_formula
-            self.childs = []
+            self.children = []
             # le stesse formule ma in una lista per poter essere stampate (come stringa)
             self.formule = []
             for formula in ins_formula:
@@ -117,7 +117,7 @@ class Tableaux():
         # metodo per poter rappresentare l'albero del tableaux
         def __str__(self, level=0):
             ret = "\t" * level + repr(self.formule) + "\n"
-            for child in self.childs:
+            for child in self.children:
                 ret += child.__str__(level + 1)
             return ret
 
@@ -137,10 +137,10 @@ class Tableaux():
     # metodo per eliminare doppie negazioni
     def doppia_negazione(self, node, formula, new_foglie):
         # crea una nuova formula che ha come root l'elemento dopo la doppia negazione
-        new_formula = Formula(formula.root.childs[0].childs[0])
+        new_formula = Formula(formula.root.children[0].children[0])
         # crea un nuovo nodo dell'albero tableaux
         new_nodo = self.Nodo([new_formula])
-        node.childs.append(new_nodo)
+        node.children.append(new_nodo)
         new_foglie.append(new_nodo)
 
     # metodo che fa side effect su self.ret, questa implementa ed analizza l'albero del tableaux, modificando opportunamente il valore self.ret
@@ -156,7 +156,7 @@ class Tableaux():
                 if formula.root.value == "~":
                     # se si controllo i figli
                     # se è uno ed è "~"
-                    if formula.root.childs[0].value == "~":
+                    if formula.root.children[0].value == "~":
                         # lista di supporto per sapere quali sono le foglie dell'albero tableaux
                         new_foglie = []
                         for node in foglie:
@@ -167,38 +167,38 @@ class Tableaux():
                 # controllo se c'è "~"
                 if formula.root.value == "~":
                     # se il figlio è un "∨" abbiamo ~(ϕ ∨ ψ)
-                    if formula.root.childs[0].value == "∨":
+                    if formula.root.children[0].value == "∨":
                         new_foglie = []
                         for node in foglie:
                             new_ins_formula = []
                             # crea una nodo della formula ~ϕ
                             phi = Node("~")
-                            phi.childs.append(formula.root.childs[0].childs[0])
+                            phi.children.append(formula.root.children[0].children[0])
                             new_ins_formula.append(Formula(phi))
                             # crea una nodo della formula ~ψ
                             psi = Node("~")
-                            psi.childs.append(formula.root.childs[0].childs[1])
+                            psi.children.append(formula.root.children[0].children[1])
                             new_ins_formula.append(Formula(psi))
                             # crea un nodo di tableaux per ogni foglia e lo passa come figlio a ognuna
                             new_nodo = self.Nodo(new_ins_formula)
-                            node.childs.append(new_nodo)
+                            node.children.append(new_nodo)
                             new_foglie.append(new_nodo)
                         foglie = new_foglie
                     # se il figlio è un "→" abbiamo ~(ϕ → ψ)
-                    if formula.root.childs[0].value == "→":
+                    if formula.root.children[0].value == "→":
                         new_foglie = []
                         for node in foglie:
                             new_ins_formula = []
                             # crea un nodo della formula ϕ
-                            phi = formula.root.childs[0].childs[0]
+                            phi = formula.root.children[0].children[0]
                             new_ins_formula.append(Formula(phi))
                             # crea una nodo della formula ~ψ
                             psi = Node("~")
-                            psi.childs.append(formula.root.childs[0].childs[1])
+                            psi.children.append(formula.root.children[0].children[1])
                             new_ins_formula.append(Formula(psi))
                             # crea un nodo di tableaux per ogni foglia e lo passa come figlio a ognuna
                             new_nodo = self.Nodo(new_ins_formula)
-                            node.childs.append(new_nodo)
+                            node.children.append(new_nodo)
                             new_foglie.append(new_nodo)
                         foglie = new_foglie
                 # controllo se c'è "∧" se si abbiamo ϕ ∧ ψ
@@ -207,14 +207,14 @@ class Tableaux():
                     for node in foglie:
                         new_ins_formula = []
                         # crea un nodo della formula ϕ
-                        phi = formula.root.childs[0]
+                        phi = formula.root.children[0]
                         new_ins_formula.append(Formula(phi))
                         # crea un nodo della formula ψ
-                        psi = formula.root.childs[1]
+                        psi = formula.root.children[1]
                         new_ins_formula.append(Formula(psi))
                         # crea un nodo di tableaux per ogni foglia e lo passo come figlio a ognuna
                         new_nodo = self.Nodo(new_ins_formula)
-                        node.childs.append(new_nodo)
+                        node.children.append(new_nodo)
                         new_foglie.append(new_nodo)
                     foglie = new_foglie
             # 3° CONTROLLO: BETA RULE
@@ -222,25 +222,25 @@ class Tableaux():
                 # controllo se c'è "~"
                 if formula.root.value == "~":
                     # se il figlio è un "∧" abbiamo ~(ϕ ∧ ψ)
-                    if formula.root.childs[0].value == "∧":
+                    if formula.root.children[0].value == "∧":
                         new_foglie = []
                         for node in foglie:
                             ins_formula_sx = []
                             ins_formula_dx = []
                             # crea un nodo della formula ~ϕ
                             phi = Node("~")
-                            phi.childs.append(formula.root.childs[0].childs[0])
+                            phi.children.append(formula.root.children[0].children[0])
                             ins_formula_sx.append(Formula(phi))
                             # crea un nodo della formula ~ψ
                             psi = Node("~")
-                            psi.childs.append(formula.root.childs[0].childs[1])
+                            psi.children.append(formula.root.children[0].children[1])
                             ins_formula_dx.append(Formula(psi))
                             # crea un nodo del tableaux che ha come formula ~ϕ
                             new_nodo_sx = self.Nodo(ins_formula_sx)
                             # crea un nodo del tableaux che ha come formula ~ψ
                             new_nodo_dx = self.Nodo(ins_formula_dx)
-                            node.childs.append(new_nodo_sx)
-                            node.childs.append(new_nodo_dx)
+                            node.children.append(new_nodo_sx)
+                            node.children.append(new_nodo_dx)
                             new_foglie.append(new_nodo_sx)
                             new_foglie.append(new_nodo_dx)
                         foglie = new_foglie
@@ -251,17 +251,17 @@ class Tableaux():
                         ins_formula_sx = []
                         ins_formula_dx = []
                         # crea un nodo della formula ϕ
-                        phi = formula.root.childs[0]
+                        phi = formula.root.children[0]
                         ins_formula_sx.append(Formula(phi))
                         # crea un nodo della formula ψ
-                        psi = formula.root.childs[1]
+                        psi = formula.root.children[1]
                         ins_formula_dx.append(Formula(psi))
                         # crea un nodo del tableaux che ha come formula ϕ
                         new_nodo_sx = self.Nodo(ins_formula_sx)
                         # crea un nodo del tableaux che ha come formula ψ
                         new_nodo_dx = self.Nodo(ins_formula_dx)
-                        node.childs.append(new_nodo_sx)
-                        node.childs.append(new_nodo_dx)
+                        node.children.append(new_nodo_sx)
+                        node.children.append(new_nodo_dx)
                         new_foglie.append(new_nodo_sx)
                         new_foglie.append(new_nodo_dx)
                     foglie = new_foglie
@@ -273,34 +273,34 @@ class Tableaux():
                         ins_formula_dx = []
                         # crea un nodo della formula ~ϕ
                         phi = Node("~")
-                        phi.childs.append(formula.root.childs[0])
+                        phi.children.append(formula.root.children[0])
                         ins_formula_sx.append(Formula(phi))
                         # crea un nodo della formula ψ
-                        psi = formula.root.childs[1]
+                        psi = formula.root.children[1]
                         ins_formula_dx.append(Formula(psi))
                         # crea un nodo del tableaux che ha come formula ~ϕ
                         new_nodo_sx = self.Nodo(ins_formula_sx)
                         # crea un nodo del tableaux che ha come formula ψ
                         new_nodo_dx = self.Nodo(ins_formula_dx)
-                        node.childs.append(new_nodo_sx)
-                        node.childs.append(new_nodo_dx)
+                        node.children.append(new_nodo_sx)
+                        node.children.append(new_nodo_dx)
                         new_foglie.append(new_nodo_sx)
                         new_foglie.append(new_nodo_dx)
                     foglie = new_foglie
             # 4° CONTROLLO: TERMINI
             for formula in nodo.ins_formula:
                 if formula.root.value == "~":
-                    if formula.root.childs[0].estTermine():
-                        termine = formula.root.childs[0]
+                    if formula.root.children[0].estTermine():
+                        termine = formula.root.children[0]
                         if termine.boolean == True:
                             # se il valore assegnato al termine è true avrei una contraddizione e perciò devo chiudere la branch
-                            nodo.childs = [self.Nodo([Formula(Node("X"))])]
+                            nodo.children = [self.Nodo([Formula(Node("X"))])]
                             return
                         else:
                             # non ho assegnato nessun valore di verità al termine e quindi posso dargli False
                             termine.boolean = False
                             # controllo una chiusura positiva della branch, che può avvenire se mi trovo in una foglia del tableaux e se ho finito di analizzare tutte le formule del nodo
-                            if len(nodo.childs) == 0:
+                            if len(nodo.children) == 0:
                                 count = 0
                                 # controlla i boolean dei termini id ins_formula
                                 for term in self.terms:
@@ -309,18 +309,18 @@ class Tableaux():
                                         count += 1
                                 if count == self.terms_len:
                                     self.ret = True
-                                    nodo.childs = [self.Nodo([Formula(Node("O"))])]
+                                    nodo.children = [self.Nodo([Formula(Node("O"))])]
                                     return
                 if formula.root.estTermine():
                     termine = formula.root
                     # se il valore assegnato al termine è false avrei una contraddizione e perciò devo chiudere la branch
                     if termine.boolean == False:
-                        nodo.childs = [self.Nodo([Formula(Node("X"))])]
+                        nodo.children = [self.Nodo([Formula(Node("X"))])]
                         return
                     else:
                         # non ho assegnato nessun valore di verità al termine e quindi posso dargli True
                         termine.boolean = True
-                        if len(nodo.childs) == 0:
+                        if len(nodo.children) == 0:
                             count = 0
                             # controlla i boolean dei termini id ins_formula
                             for term in self.terms:
@@ -329,16 +329,16 @@ class Tableaux():
                                     count += 1
                             if count == self.terms_len:
                                 self.ret = True
-                                nodo.childs = [self.Nodo([Formula(Node("O"))])]
+                                nodo.children = [self.Nodo([Formula(Node("O"))])]
                                 return
             # a seconda del numero di figli del nodo attuale so come dividere le foglie
             # se ho un figlio gli passo tutte le foglie
-            if len(nodo.childs) == 1:
-                self.risolvi(nodo.childs[0], foglie)
+            if len(nodo.children) == 1:
+                self.risolvi(nodo.children[0], foglie)
             # se ne ho due passo la prima metà al figlio sinistro e la seconda al destro
-            elif len(nodo.childs) == 2:
-                self.risolvi(nodo.childs[0], foglie[:int(len(foglie) / 2)])
-                self.risolvi(nodo.childs[1], foglie[int(len(foglie) / 2):])
+            elif len(nodo.children) == 2:
+                self.risolvi(nodo.children[0], foglie[:int(len(foglie) / 2)])
+                self.risolvi(nodo.children[1], foglie[int(len(foglie) / 2):])
 
 
 # inp = str(input("Digita la formula: "))
