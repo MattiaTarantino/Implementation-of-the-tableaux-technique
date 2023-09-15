@@ -150,143 +150,144 @@ class Tableaux():
             if nodo.ins_formula is None:
                 return
             # inizio controllo dei nodi
-            # 1 CONTROLLO: DOPPIA NEGAZIONE/ASSEGNAZIONE BOOLEAN
+            # 1° CONTROLLO: DOPPIA NEGAZIONE
             for formula in nodo.ins_formula:
-                # controllo se c'è "!"
+                # controllo se c'è "~"
                 if formula.root.value == "~":
                     # se si controllo i figli
-                    # se è uno ed è "!"
+                    # se è uno ed è "~"
                     if formula.root.childs[0].value == "~":
                         # lista di supporto per sapere quali sono le foglie dell'albero tableaux
                         new_foglie = []
                         for node in foglie:
                             self.doppia_negazione(node, formula, new_foglie)
                         foglie = new_foglie
-            # 2 CONTROLLO: ALPHA RULE
+            # 2° CONTROLLO: ALPHA RULE
             for formula in nodo.ins_formula:
-                # controllo se c'è "!"
+                # controllo se c'è "~"
                 if formula.root.value == "~":
-                    # se il figlio è un "|"
+                    # se il figlio è un "∨" abbiamo ~(ϕ ∨ ψ)
                     if formula.root.childs[0].value == "∨":
                         new_foglie = []
                         for node in foglie:
                             new_ins_formula = []
-                            # crea una nodo della formula phi con il ! + figlio sinistro dell'|
+                            # crea una nodo della formula ~ϕ
                             phi = Node("~")
                             phi.childs.append(formula.root.childs[0].childs[0])
                             new_ins_formula.append(Formula(phi))
-                            # crea una nodo della formula psi con il ! + figlio destro dell'|
+                            # crea una nodo della formula ~ψ
                             psi = Node("~")
                             psi.childs.append(formula.root.childs[0].childs[1])
                             new_ins_formula.append(Formula(psi))
-                            # crea un nodo di tableaux per ogni foglia e passalo come figlio a ognuna
+                            # crea un nodo di tableaux per ogni foglia e lo passa come figlio a ognuna
                             new_nodo = self.Nodo(new_ins_formula)
                             node.childs.append(new_nodo)
                             new_foglie.append(new_nodo)
                         foglie = new_foglie
-                    # se è un "-->"
+                    # se il figlio è un "→" abbiamo ~(ϕ → ψ)
                     if formula.root.childs[0].value == "→":
                         new_foglie = []
                         for node in foglie:
                             new_ins_formula = []
-                            # crea un nodo della formula phi con il figlio sinistro dell' -->
+                            # crea un nodo della formula ϕ
                             phi = formula.root.childs[0].childs[0]
                             new_ins_formula.append(Formula(phi))
-                            # crea una nodo della formula psi con il ! + figlio destro dell'-->
+                            # crea una nodo della formula ~ψ
                             psi = Node("~")
                             psi.childs.append(formula.root.childs[0].childs[1])
                             new_ins_formula.append(Formula(psi))
-                            # crea un nodo di tableaux per ogni foglia e passalo come figlio a ognuna
+                            # crea un nodo di tableaux per ogni foglia e lo passa come figlio a ognuna
                             new_nodo = self.Nodo(new_ins_formula)
                             node.childs.append(new_nodo)
                             new_foglie.append(new_nodo)
                         foglie = new_foglie
-                # controllo se c'è "&"
+                # controllo se c'è "∧" se si abbiamo ϕ ∧ ψ
                 if formula.root.value == "∧":
                     new_foglie = []
                     for node in foglie:
                         new_ins_formula = []
-                        # crea un nodo della formula phi con il figlio sinistro dell'&
+                        # crea un nodo della formula ϕ
                         phi = formula.root.childs[0]
                         new_ins_formula.append(Formula(phi))
-                        # crea un nodo della formula psi con il figlio destro dell'&
+                        # crea un nodo della formula ψ
                         psi = formula.root.childs[1]
                         new_ins_formula.append(Formula(psi))
-                        # crea un nodo di tableaux per ogni foglia e passalo come figlio a ognuna
+                        # crea un nodo di tableaux per ogni foglia e lo passo come figlio a ognuna
                         new_nodo = self.Nodo(new_ins_formula)
                         node.childs.append(new_nodo)
                         new_foglie.append(new_nodo)
                     foglie = new_foglie
-            # 3 CONTROLLO: BETA RULE
+            # 3° CONTROLLO: BETA RULE
             for formula in nodo.ins_formula:
-                # controllo se c'è "!"
+                # controllo se c'è "~"
                 if formula.root.value == "~":
-                    # se il figlio è un "&"
+                    # se il figlio è un "∧" abbiamo ~(ϕ ∧ ψ)
                     if formula.root.childs[0].value == "∧":
                         new_foglie = []
                         for node in foglie:
                             ins_formula_sx = []
                             ins_formula_dx = []
-                            # crea un nodo della formula phi con ! + il figlio sinistro dell'&
+                            # crea un nodo della formula ~ϕ
                             phi = Node("~")
                             phi.childs.append(formula.root.childs[0].childs[0])
                             ins_formula_sx.append(Formula(phi))
-                            # crea un nodo della formula psi con ! + il figlio destro dell'&
+                            # crea un nodo della formula ~ψ
                             psi = Node("~")
                             psi.childs.append(formula.root.childs[0].childs[1])
                             ins_formula_dx.append(Formula(psi))
-                            # crea un nodo del tableaux che ha come formula phi
+                            # crea un nodo del tableaux che ha come formula ~ϕ
                             new_nodo_sx = self.Nodo(ins_formula_sx)
-                            # crea un nodo del tableaux che ha come formula psi
+                            # crea un nodo del tableaux che ha come formula ~ψ
                             new_nodo_dx = self.Nodo(ins_formula_dx)
                             node.childs.append(new_nodo_sx)
                             node.childs.append(new_nodo_dx)
                             new_foglie.append(new_nodo_sx)
                             new_foglie.append(new_nodo_dx)
                         foglie = new_foglie
-                # controllo se c'è "|"
+                # controllo se c'è "∨" se si abbiamo ϕ ∨ ψ
                 if formula.root.value == "∨":
                     new_foglie = []
                     for node in foglie:
                         ins_formula_sx = []
                         ins_formula_dx = []
-                        # crea un nodo della formula phi con il figlio sinistro dell'|
+                        # crea un nodo della formula ϕ
                         phi = formula.root.childs[0]
                         ins_formula_sx.append(Formula(phi))
-                        # crea un nodo della formula psi con il figlio destro dell'|
+                        # crea un nodo della formula ψ
                         psi = formula.root.childs[1]
                         ins_formula_dx.append(Formula(psi))
-                        # crea un nodo del tableaux che ha come formula phi
+                        # crea un nodo del tableaux che ha come formula ϕ
                         new_nodo_sx = self.Nodo(ins_formula_sx)
-                        # crea un nodo del tableaux che ha come formula psi
+                        # crea un nodo del tableaux che ha come formula ψ
                         new_nodo_dx = self.Nodo(ins_formula_dx)
                         node.childs.append(new_nodo_sx)
                         node.childs.append(new_nodo_dx)
                         new_foglie.append(new_nodo_sx)
                         new_foglie.append(new_nodo_dx)
                     foglie = new_foglie
-                # controllo se c'è "-"
+                # controllo se c'è "→" se si abbiamo ϕ → ψ
                 if formula.root.value == "→":
                     new_foglie = []
                     for node in foglie:
                         ins_formula_sx = []
                         ins_formula_dx = []
-                        # crea un nodo della formula psi con ! + il figlio destro dell'-->
+                        # crea un nodo della formula ~ϕ
                         phi = Node("~")
                         phi.childs.append(formula.root.childs[0])
                         ins_formula_sx.append(Formula(phi))
-                        # crea un nodo della formula psi con il figlio destro dell'-->
+                        # crea un nodo della formula ψ
                         psi = formula.root.childs[1]
                         ins_formula_dx.append(Formula(psi))
-                        # crea un nodo del tableaux che ha come formula phi
+                        # crea un nodo del tableaux che ha come formula ~ϕ
                         new_nodo_sx = self.Nodo(ins_formula_sx)
-                        # crea un nodo del tableaux che ha come formula psi
+                        # crea un nodo del tableaux che ha come formula ψ
                         new_nodo_dx = self.Nodo(ins_formula_dx)
                         node.childs.append(new_nodo_sx)
                         node.childs.append(new_nodo_dx)
                         new_foglie.append(new_nodo_sx)
                         new_foglie.append(new_nodo_dx)
                     foglie = new_foglie
+            # 4° CONTROLLO: TERMINI
             for formula in nodo.ins_formula:
                 if formula.root.value == "~":
                     if formula.root.childs[0].estTermine():
