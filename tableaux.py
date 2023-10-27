@@ -43,19 +43,25 @@ class Formula:
 
 
 def build_tree(expression_list, termini):
+    # se la lista è vuota restituisco None
     if not expression_list:
         return None
 
+    # Analizziamo il primo elemento della lista
     root_value = expression_list[0]
     root = Node(root_value)
 
+    # se il valore non è un operatore lo aggiungo alla lista dei termini
     if root_value not in ["∧", "∨", "~", "→"]:
         for term in termini:
             if term.value == root_value:
+                # passo il nodo termine già presente nella lista dei termini
                 root = term
+        # se il termine non è presente nella lista dei termini lo aggiungo
         if root not in termini:
             termini.append(root)
 
+    # se la lista ha più di un elemento, ricorsivamente costruiamo l'albero
     if len(expression_list) > 1:
         for child_expression_list in expression_list[1:]:
             child_tree, termini = build_tree(child_expression_list, termini)
@@ -86,7 +92,7 @@ class Node:
 
     # metodo per capire se un certo è un operatore
     def estOperator(self):
-        operators = ["∧", "∨", "~", "→"]  # and, or, not, not not, implica
+        operators = ["∧", "∨", "~", "→"]  # and, or, not, implica
         if self.value in operators:
             return True
         else:
@@ -341,7 +347,6 @@ class Tableaux():
                 self.risolvi(nodo.children[1], foglie[int(len(foglie) / 2):])
 
 
-# inp = str(input("Digita la formula: "))
 ins_formula_exp = []
 termini = []
 print("1) !((q | p) --> (p | q))")
@@ -380,7 +385,7 @@ elif inp == 5 or inp == 6:
         to_parse1 = '(a | b) & c'
         to_parse2 = '!b | !c'
         to_parse3 = '!a'
-    print("Le formula sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
+    print("Le formule sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
     parsed1 = classical_parser.parse(to_parse1)
     parsed2 = classical_parser.parse(to_parse2)
     parsed3 = classical_parser.parse(to_parse3)
@@ -395,8 +400,11 @@ elif inp == 5 or inp == 6:
     formula3.termini = termini
     print("Rappresentazione della formule come albero:")
     print_tree(formula1.root)
+    print("--------------------")
     print_tree(formula2.root)
+    print("--------------------")
     print_tree(formula3.root)
+    print("--------------------")
     ins_formula_exp.append(formula1)
     ins_formula_exp.append(formula2)
     ins_formula_exp.append(formula3)
