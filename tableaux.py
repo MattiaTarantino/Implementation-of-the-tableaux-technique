@@ -355,11 +355,11 @@ print("3) ! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )")
 print("4) !( (q | p) --> (q & p) )")
 print("5) p --> (q & r) , !q | !r , !!p")
 print("6) (a | b) & c , !b | !c , !a")
-print("7) Inserisci le formule da input")
-inp = int(input("Scegli una formula su cui applicare la tecnica del tableaux: "))
+print("7) Enter formulas from input")
+inp = int(input("Choose a formula on which to apply the tableaux technique: "))
 if inp < 5:
     if inp == 0:
-        to_parse = str(input("Digita la formula: "))
+        to_parse = str(input("Type in the formula: "))
     elif inp == 1:
         to_parse = '!((q | p) --> (p | q))'
     elif inp == 2:
@@ -368,12 +368,12 @@ if inp < 5:
         to_parse = '! ( ( (p --> q) & ( (p & q) --> r) ) --> (p --> r) )'
     elif inp == 4:
         to_parse = '!( (q | p) --> (q & p) )'
-    print("La formula è " + to_parse)
+    print("The formula is " + to_parse)
     parsed = classical_parser.parse(to_parse)
     root, termini = build_tree(parsed, termini)
     formula = Formula(root)
     formula.termini = termini
-    print("Rappresentazione della formula come albero:")
+    print("Representation of the formula as a tree:")
     print_tree(formula.root)
     ins_formula_exp.append(formula)
 elif inp == 5 or inp == 6:
@@ -385,7 +385,7 @@ elif inp == 5 or inp == 6:
         to_parse1 = '(a | b) & c'
         to_parse2 = '!b | !c'
         to_parse3 = '!a'
-    print("Le formule sono : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
+    print("The formulas are : " + to_parse1 + "  ,  " + to_parse2 + "  ,  " + to_parse3)
     parsed1 = classical_parser.parse(to_parse1)
     parsed2 = classical_parser.parse(to_parse2)
     parsed3 = classical_parser.parse(to_parse3)
@@ -398,7 +398,7 @@ elif inp == 5 or inp == 6:
     formula1.termini = termini
     formula2.termini = termini
     formula3.termini = termini
-    print("Rappresentazione della formule come albero:")
+    print("Representation of formulas as a tree:")
     print_tree(formula1.root)
     print("--------------------")
     print_tree(formula2.root)
@@ -409,26 +409,26 @@ elif inp == 5 or inp == 6:
     ins_formula_exp.append(formula2)
     ins_formula_exp.append(formula3)
 elif inp == 7:
-    to_parse = str(input("Digita la formula (stringa vuota per terminare): "))
+    to_parse = str(input("Type the formula (empty string to end): "))
     while to_parse != "":
         parsed = classical_parser.parse(to_parse)
         root, termini = build_tree(parsed, termini)
         formula = Formula(root)
         formula.termini = termini
-        print("Rappresentazione della formula come albero:")
+        print("Representation of the formula as a tree:")
         print_tree(formula.root)
         ins_formula_exp.append(formula)
-        to_parse = str(input("Digita la formula (stringa vuota per terminare): "))
+        to_parse = str(input("Type the formula (empty string to end): "))
 
 tableaux = Tableaux(ins_formula_exp)
 tableaux.risolvi(tableaux.root, [tableaux.root])
 print("\n")
-print("Rappresentazione dell'albero tableaux:\n")
+print("Representation of the tableaux tree:\n")
 print(str(tableaux.root))
 if tableaux.ret:
-    print("La formula è soddisfacibile\n")
+    print("The formula is satisfiable\n")
     for term in tableaux.terms:
         print(term.value + " = " + str(term.boolean))
 else:
-    print("La formula non è soddisfacibile\n")
+    print("The formula is not satisfiable\n")
 
